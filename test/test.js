@@ -67,7 +67,7 @@ function selectRandomNodes(nodeList, count = 2) {
 }
 
 // eslint-disable-next-line prefer-const
-let selectedNodes = selectRandomNodes(goodNodes.goodNodes, 2);
+let selectedNodes = selectRandomNodes(goodNodes.goodNodes, 1);
 // selectedNode = '35.88.162.148:1443:self-signed'; // devnet
 // selectedNode = '127.0.0.1:3000';
 
