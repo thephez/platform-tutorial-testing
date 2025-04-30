@@ -17,7 +17,7 @@ const network = process.env.NETWORK;
 let selectedNode =
   goodNodes.goodNodes[Math.floor(Math.random() * goodNodes.goodNodes.length)];
 selectedNode = '35.89.246.86:1443:self-signed'; // devnet
-const documentId = '9VPFrjy8DXdPt1reL8BHS4qj6f8uJRukzjTcL1zyVYrL'; // DPNS domain document ID for identityId
+const documentId = 'CMfNKGTwDgMtHc4ikveJ1Ei6cXMsVYKQphFe1KUAyzSa'; // DPNS domain document ID for identityId
 const identityId = '3g2qNP9Ct2UfSUiEEj3CDAuSufmtpg8frTkNGgzBREbX'; // Identity ID for an identityName (e.g. Tutorial-Test-000000)
 const identityName = ['Tutorial-Test-000000', 'Tutorial-Test-000000-backup'];
 const startsWithString = 'Tutorial-Test-';
