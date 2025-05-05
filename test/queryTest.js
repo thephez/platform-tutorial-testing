@@ -16,9 +16,9 @@ const network = process.env.NETWORK;
 // eslint-disable-next-line prefer-const
 let selectedNode =
   goodNodes.goodNodes[Math.floor(Math.random() * goodNodes.goodNodes.length)];
-selectedNode = '35.89.246.86:1443:self-signed'; // devnet
-const documentId = 'CMfNKGTwDgMtHc4ikveJ1Ei6cXMsVYKQphFe1KUAyzSa'; // DPNS domain document ID for identityId
-const identityId = '3g2qNP9Ct2UfSUiEEj3CDAuSufmtpg8frTkNGgzBREbX'; // Identity ID for an identityName (e.g. Tutorial-Test-000000)
+selectedNode = 'devnet-cobblet.thephez.com:1443:self-signed'; // devnet
+const documentId = '6U14Tz8jqs6JhFHGRgEy5emL5yjDVCoU5i8BuJi8bEAy'; // DPNS domain document ID for identityId
+const identityId = 'CijkFra66Ffs6uYtNfhUboGAZVtaMw89Z7igFZ155kMU'; // Identity ID for an identityName (e.g. Tutorial-Test-000000)
 const identityName = ['Tutorial-Test-000000', 'Tutorial-Test-000000-backup'];
 const startsWithString = 'Tutorial-Test-';
 
