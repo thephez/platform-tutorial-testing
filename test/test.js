@@ -68,7 +68,7 @@ function selectRandomNodes(nodeList, count = 2) {
 
 // eslint-disable-next-line prefer-const
 let selectedNodes = selectRandomNodes(goodNodes.goodNodes, 2);
-selectedNodes = ['35.89.246.86:1443:self-signed']; // devnet
+// selectedNodes = ['devnet-cobblet.thephez.com:1443:self-signed']; // devnet
 // selectedNode = '127.0.0.1:3000';
 
 let noWalletClient;
