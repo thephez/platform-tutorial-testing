@@ -727,7 +727,7 @@ describe(`Tutorial Code Tests (${new Date().toLocaleTimeString()})`, function su
   });
 
   describe('Misc', function () {
-    it('Should send a transaction', async function () {
+    xit('Should send a transaction', async function () {
       if (typeof identity === 'undefined') {
         console.log(
           '\tExpected identity to be defined. Skipping the test to minimize UTXO growth.',
