@@ -17,8 +17,8 @@ const network = process.env.NETWORK;
 let selectedNode =
   goodNodes.goodNodes[Math.floor(Math.random() * goodNodes.goodNodes.length)];
 selectedNode = 'devnet-cobblet.thephez.com:1443:self-signed'; // devnet
-const documentId = '6U14Tz8jqs6JhFHGRgEy5emL5yjDVCoU5i8BuJi8bEAy'; // DPNS domain document ID for identityId
-const identityId = 'CijkFra66Ffs6uYtNfhUboGAZVtaMw89Z7igFZ155kMU'; // Identity ID for an identityName (e.g. Tutorial-Test-000000)
+const documentId = 'E8m6NCCnpschx4WRfk1uLMHqttqMJKPwYt8fWaVSJPrL'; // DPNS domain document ID for identityId
+const identityId = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit'; // Identity ID for an identityName (e.g. Tutorial-Test-000000)
 const identityName = ['Tutorial-Test-000000', 'Tutorial-Test-000000-backup'];
 const startsWithString = 'Tutorial-Test-';
 
