@@ -14,35 +14,50 @@ on:
     #- cron:  '0 */8 * * *'
 
 jobs:
-  build:
-
+  test_queries:
     runs-on: ubuntu-latest
     env:
       CI: true
       NETWORK: 'testnet'
       WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
-      SYNC_START_HEIGHT: 1134210    
-
+      SYNC_START_HEIGHT: 1268800
     strategy:
       matrix:
         node-version: [20]
-
     timeout-minutes: 15
-
     steps:
-    - name: Use https instead of ssh for git
-      run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - name: Use https instead of ssh for git
+        run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build --if-present
+      - name: Run query tests
+        run: npm run test:queries
 
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run build --if-present
-
-    - name: Run query tests
-      run: npm run test:queries
-
-    - name: Run integration tests
-      run: npm run test:integration
+  test_integration:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      NETWORK: 'testnet'
+      WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+      SYNC_START_HEIGHT: 1268800
+    strategy:
+      matrix:
+        node-version: [20]
+    timeout-minutes: 15
+    steps:
+      - name: Use https instead of ssh for git
+        run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build --if-present
+      - name: Run integration tests
+        run: npm run test:integration
