@@ -1,6 +1,6 @@
 {
   "name": "platform-tutorial-testing",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,12 +8,14 @@
     "lint": "eslint .",
     "test:integration": "mocha test/test --exit",
     "test:queries": "mocha test/queryTest --exit",
+    "test:evo-phase1": "mocha test/test-evo-phase1.mjs --exit",
     "test": "mocha --exit"
   },
   "author": "thephez",
   "license": "MIT",
   "dependencies": {
-    "@dashevo/wasm-dpp": "^2.0.1",
+    "@dashevo/evo-sdk": "2.1.0-pr.2716.1",
+    "@dashevo/wasm-dpp": "2.1.0-pr.2716.1",
     "dash": "^5.0.1"
   },
   "devDependencies": {
