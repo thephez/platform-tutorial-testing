@@ -4,7 +4,9 @@
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable no-undef */
 const Dash = require('dash');
-const { ExtendedDocument } = require('@dashevo/wasm-dpp/');
+
+const { ExtendedDocument } = Dash.PlatformProtocol;
+// const { ExtendedDocument } = require('@dashevo/wasm-dpp/');
 const { expect } = require('chai');
 const dotenv = require('dotenv');
 const testQueries = require('../queries/testQueries');
