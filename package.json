@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "fmt": "npx prettier@2 --write '**/*.{,js}'",
+    "fmt": "npx prettier@2 --write '**/*.{,js,mjs}'",
     "lint": "eslint .",
-    "test:integration": "mocha test/test --exit",
-    "test:queries": "mocha test/queryTest --exit",
-    "test": "mocha --exit"
+    "test:tutorials": "mocha test/test.mjs --exit",
+    "test:queries": "mocha test/queryTest.mjs --exit",
+    "test:deprecated:integration": "mocha test/js-dash-sdk-deprecated/test.js --exit",
+    "test:deprecated:queries": "mocha test/js-dash-sdk-deprecated/queryTest.js --exit",
+    "test": "mocha test/test.mjs test/queryTest.mjs --exit"
   },
   "author": "thephez",
   "license": "MIT",

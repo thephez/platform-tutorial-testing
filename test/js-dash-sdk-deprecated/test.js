@@ -174,7 +174,10 @@ describe(`Tutorial Code Tests (${new Date().toLocaleTimeString()})`, function su
       console.log(`\tRegistered identity: ${identity.toJSON().id}`);
       expect(identity).to.be.instanceOf(Identity);
       // New identity credit balance should be (10000 duffs - a small fee) * 1000
-      assert.isTrue(identity.balance > BigInt(newIdentityBalance), 'identity balance is not above expected minimum');
+      assert.isTrue(
+        identity.balance > BigInt(newIdentityBalance),
+        'identity balance is not above expected minimum',
+      );
       // assert.containsAllKeys(identity.toJSON(), ['id', 'publicKeys', 'balance', 'revision']);
     }).timeout(60000);
 
