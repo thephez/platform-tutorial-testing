@@ -1,6 +1,6 @@
 {
   "name": "platform-tutorial-testing",
-  "version": "2.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "author": "thephez",
   "license": "MIT",
   "dependencies": {
+    "@dashevo/evo-sdk": "^3.0.1",
     "@dashevo/wasm-dpp": "^2.0.1",
     "dash": "^5.0.1"
   },
