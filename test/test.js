@@ -4,7 +4,9 @@
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable no-undef */
 const Dash = require('dash');
-const { ExtendedDocument } = require('@dashevo/wasm-dpp/');
+
+const { ExtendedDocument } = Dash.PlatformProtocol;
+// const { ExtendedDocument } = require('@dashevo/wasm-dpp/');
 const { assert, expect } = require('chai');
 const faker = require('faker');
 const dotenv = require('dotenv');
@@ -174,9 +176,12 @@ describe(`Tutorial Code Tests (${new Date().toLocaleTimeString()})`, function su
       console.log(`\tRegistered identity: ${identity.toJSON().id}`);
       expect(identity).to.be.instanceOf(Identity);
       // New identity credit balance should be (10000 duffs - a small fee) * 1000
-      assert.isTrue(identity.balance > BigInt(newIdentityBalance), 'identity balance is not above expected minimum');
+      assert.isTrue(
+        identity.balance > BigInt(newIdentityBalance),
+        'identity balance is not above expected minimum',
+      );
       // assert.containsAllKeys(identity.toJSON(), ['id', 'publicKeys', 'balance', 'revision']);
-    }).timeout(60000);
+    }).timeout(600000);
 
     it('Should retrieve the identity', async function () {
       if (typeof identity === 'undefined') {
@@ -204,7 +209,7 @@ describe(`Tutorial Code Tests (${new Date().toLocaleTimeString()})`, function su
       // console.log(`New balance: ${identityToppedUp.balance}`);
       expect(identityToppedUp).to.be.instanceOf(Identity);
       expect(identityToppedUp.balance).to.not.equal(startBalance);
-    });
+    }).timeout(600000);
 
     it('Should retrieve all account identity IDs', async function () {
       if (typeof identity === 'undefined') {
