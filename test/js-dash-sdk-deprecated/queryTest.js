@@ -7,7 +7,7 @@ const Dash = require('dash');
 const { ExtendedDocument } = require('@dashevo/wasm-dpp/');
 const { expect } = require('chai');
 const dotenv = require('dotenv');
-const testQueries = require('../queries/testQueries');
+const testQueries = require('../../queries/testQueries');
 const goodNodes = require('./goodNodes');
 
 dotenv.config();

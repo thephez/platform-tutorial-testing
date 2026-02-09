@@ -9,14 +9,14 @@ const { assert, expect } = require('chai');
 const faker = require('faker');
 const dotenv = require('dotenv');
 const goodNodes = require('./goodNodes');
-const tutorials = require('../tutorials');
-const minimalContractDocumentSchema = require('../tutorials/contract/contracts/contractMinimal.json');
-const indexedContractDocumentSchema = require('../tutorials/contract/contracts/contractWithIndex.json');
-const timestampContractDocumentSchema = require('../tutorials/contract/contracts/contractWithTimestamps.json');
-const refContractDocumentSchema = require('../tutorials/contract/contracts/contractWithRef.json');
-const refContractDefinitions = require('../tutorials/contract/contracts/contractWithRefDefinitions.json');
-const binaryContractDocumentSchema = require('../tutorials/contract/contracts/contractWithBinaryData.json');
-const nftContractDocumentSchema = require('../tutorials/contract/contracts/contractNft.json');
+const tutorials = require('../../tutorials/js-dash-sdk-deprecated');
+const minimalContractDocumentSchema = require('../../tutorials/contract/contracts/contractMinimal.json');
+const indexedContractDocumentSchema = require('../../tutorials/contract/contracts/contractWithIndex.json');
+const timestampContractDocumentSchema = require('../../tutorials/contract/contracts/contractWithTimestamps.json');
+const refContractDocumentSchema = require('../../tutorials/contract/contracts/contractWithRef.json');
+const refContractDefinitions = require('../../tutorials/contract/contracts/contractWithRefDefinitions.json');
+const binaryContractDocumentSchema = require('../../tutorials/contract/contracts/contractWithBinaryData.json');
+const nftContractDocumentSchema = require('../../tutorials/contract/contracts/contractNft.json');
 
 const {
   PlatformProtocol: { Identity },
