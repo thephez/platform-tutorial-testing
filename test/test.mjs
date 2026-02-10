@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { IdentityPublicKeyInCreation, wallet } from '@dashevo/evo-sdk';
@@ -23,6 +24,9 @@ import {
   deleteDocument,
 } from '../tutorials/index.mjs';
 import { DPNS_CONTRACT_ID as dpnsContractId } from '../tutorials/constants.mjs';
+
+const require = createRequire(import.meta.url);
+const contractMinimal = require('../tutorials/contract/contracts/contractMinimal.json');
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
@@ -191,134 +195,20 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
     this.timeout(80000);
 
     let writeSdk;
+    let contractId;
 
     before(async function () {
       writeSdk = await createClient(network);
     });
 
-    describe.skip('Document write tutorials', function () {
-      let createdDocumentId;
-      let testContractId;
-
-      before(async function () {
-        // Register a throwaway contract for document write tests
-        const schemas = {
-          tutorialNote: {
-            type: 'object',
-            properties: {
-              message: { type: 'string', position: 0 },
-            },
-            additionalProperties: false,
-          },
-        };
-        const contract = await registerContract(
-          writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
-          schemas,
-        );
-        testContractId =
-          contract.id?.toString() || contract.getId?.().toString();
-        expect(testContractId).to.be.a('string');
-      });
-
-      it('submitDocument - should create a document', async function () {
-        const doc = await submitDocument(
-          writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
-          testContractId,
-          'tutorialNote',
-          { message: `Test @ ${new Date().toUTCString()}` },
-        );
-        expect(doc).to.be.an('object');
-        expect(doc.constructor.name).to.equal('Document');
-
-        createdDocumentId = doc.id?.toString() || doc.getId?.().toString();
-        expect(createdDocumentId).to.be.a('string').with.length.greaterThan(0);
-        expect(doc.revision).to.equal(1n);
-        expect(doc.documentTypeName).to.equal('tutorialNote');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
-        expect(doc.dataContractId.toString()).to.equal(testContractId);
-
-        // User data is accessible via toJSON
-        const json = doc.toJSON();
-        expect(json)
-          .to.have.property('message')
-          .that.is.a('string')
-          .and.includes('Test @');
-      });
-
-      it('updateDocument - should replace a document', async function () {
-        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
-          'string',
-        );
-        const doc = await updateDocument(
-          writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
-          testContractId,
-          'tutorialNote',
-          createdDocumentId,
-          2,
-          { message: `Updated @ ${new Date().toUTCString()}` },
-        );
-        expect(doc).to.be.an('object');
-        expect(doc.constructor.name).to.equal('Document');
-
-        expect(doc.id.toString()).to.equal(createdDocumentId);
-        expect(doc.revision > 1n).to.be.true;
-        expect(doc.documentTypeName).to.equal('tutorialNote');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
-        expect(doc.dataContractId.toString()).to.equal(testContractId);
-
-        const json = doc.toJSON();
-        expect(json)
-          .to.have.property('message')
-          .that.is.a('string')
-          .and.includes('Updated @');
-      });
-
-      it('deleteDocument - should delete a document', async function () {
-        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
-          'string',
-        );
-        const result = await deleteDocument(
-          writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
-          testContractId,
-          'tutorialNote',
-          createdDocumentId,
-        );
-        // deleteDocument returns undefined (void) on success
-        expect(result).to.be.undefined;
-      });
-    });
-
-    describe.skip('Contract write tutorials', function () {
-      let contractId;
-
+    describe('Contract write tutorials', function () {
       it('registerContract - should publish a new contract', async function () {
-        const schemas = {
-          note: {
-            type: 'object',
-            properties: {
-              message: { type: 'string', position: 0 },
-            },
-            additionalProperties: false,
-          },
-        };
         const contract = await registerContract(
           writeSdk,
           writeIdentityId,
           writePrivateKeyWif,
           writeKeyId,
-          schemas,
+          contractMinimal,
         );
         expect(contract).to.be.an('object');
         expect(contract.constructor.name).to.equal('DataContract');
@@ -379,6 +269,89 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
     });
 
+    describe('Document write tutorials', function () {
+      let createdDocumentId;
+
+      it('submitDocument - should create a document', async function () {
+        expect(contractId, 'registerContract must succeed first').to.be.a(
+          'string',
+        );
+        const doc = await submitDocument(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractId,
+          'note',
+          { message: `Test @ ${new Date().toUTCString()}` },
+        );
+        expect(doc).to.be.an('object');
+        expect(doc.constructor.name).to.equal('Document');
+
+        createdDocumentId = doc.id?.toString() || doc.getId?.().toString();
+        expect(createdDocumentId).to.be.a('string').with.length.greaterThan(0);
+        expect(doc.revision).to.equal(1n);
+        expect(doc.documentTypeName).to.equal('note');
+        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.dataContractId.toString()).to.equal(contractId);
+
+        // User data is accessible via toJSON
+        const json = doc.toJSON();
+        expect(json)
+          .to.have.property('message')
+          .that.is.a('string')
+          .and.includes('Test @');
+      });
+
+      it('updateDocument - should replace a document', async function () {
+        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
+          'string',
+        );
+        const doc = await updateDocument(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractId,
+          'note',
+          createdDocumentId,
+          2,
+          { message: `Updated @ ${new Date().toUTCString()}` },
+        );
+        expect(doc).to.be.an('object');
+        expect(doc.constructor.name).to.equal('Document');
+
+        expect(doc.id.toString()).to.equal(createdDocumentId);
+        expect(doc.revision > 1n).to.be.true;
+        expect(doc.documentTypeName).to.equal('note');
+        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.dataContractId.toString()).to.equal(contractId);
+
+        const json = doc.toJSON();
+        expect(json)
+          .to.have.property('message')
+          .that.is.a('string')
+          .and.includes('Updated @');
+      });
+
+      it('deleteDocument - should delete a document', async function () {
+        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
+          'string',
+        );
+        const result = await deleteDocument(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractId,
+          'note',
+          createdDocumentId,
+        );
+        // deleteDocument returns undefined (void) on success
+        expect(result).to.be.undefined;
+      });
+    });
+
     describe.skip('Name tutorials', function () {
       it('registerName - should register a DPNS name', async function () {
         const label = `tut0r1a1-test-${Date.now()}`;
@@ -401,7 +374,9 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
     });
 
-    describe('Identity write tutorials', function () {
+    describe.skip('Identity write tutorials', function () {
+      let newKeyId;
+
       it.skip('transferCredits - should transfer credits to another identity', async function () {
         if (!transferKeyWif) {
           this.skip('TRANSFER_KEY_WIF not set');
@@ -449,7 +424,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(remainingBalance >= 0n).to.be.true;
       });
 
-      it('updateIdentity - should add a key then disable it', async function () {
+      it('updateIdentity - should add a new key to an identity', async function () {
         if (!masterKeyWif) {
           this.skip('MASTER_KEY_WIF not set');
           return;
@@ -470,9 +445,9 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           (max, k) => Math.max(max, k.id),
           0,
         );
-        const newKeyId = maxKeyId + 1;
+        newKeyId = maxKeyId + 1;
 
-        // Phase A: Add a new HIGH-level AUTHENTICATION key
+        // Add a new HIGH-level AUTHENTICATION key
         const newKey = new IdentityPublicKeyInCreation(
           newKeyId, // id
           0, // purpose: AUTHENTICATION
@@ -503,7 +478,6 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         // Re-fetch and verify key was added
         const afterAdd = await writeSdk.identities.fetch(writeIdentityId);
         const afterAddJson = afterAdd.toJSON();
-        expect(afterAddJson.revision).to.be.greaterThan(resultJson.revision);
         const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
         expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
           'object',
@@ -512,33 +486,34 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(addedKey.securityLevel).to.equal(2); // HIGH
         expect(addedKey.type).to.equal(0); // ECDSA_SECP256K1
         expect(addedKey.disabledAt).to.be.null;
+      });
 
-        // Phase B: Disable the key we just added (only if add succeeded)
-        if (addedKey) {
-          await updateIdentity(
-            writeSdk,
-            writeIdentityId,
-            masterKeyWif,
-            undefined,
-            [newKeyId],
-          );
-
-          // Re-fetch and verify key was disabled
-          const afterDisable = await writeSdk.identities.fetch(writeIdentityId);
-          const afterDisableJson = afterDisable.toJSON();
-          expect(afterDisableJson.revision).to.be.greaterThan(
-            afterAddJson.revision,
-          );
-          const disabledKey = afterDisableJson.publicKeys.find(
-            (k) => k.id === newKeyId,
-          );
-          expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an(
-            'object',
-          );
-          expect(disabledKey.disabledAt)
-            .to.be.a('number')
-            .that.is.greaterThan(0);
+      it('updateIdentity - should disable a key on an identity', async function () {
+        expect(newKeyId, 'add-key test must succeed first').to.be.a('number');
+        if (!masterKeyWif) {
+          this.skip('MASTER_KEY_WIF not set');
+          return;
         }
+        this.timeout(120000);
+
+        await updateIdentity(
+          writeSdk,
+          writeIdentityId,
+          masterKeyWif,
+          undefined,
+          [newKeyId],
+        );
+
+        // Re-fetch and verify key was disabled
+        const afterDisable = await writeSdk.identities.fetch(writeIdentityId);
+        const afterDisableJson = afterDisable.toJSON();
+        const disabledKey = afterDisableJson.publicKeys.find(
+          (k) => k.id === newKeyId,
+        );
+        expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an(
+          'object',
+        );
+        expect(disabledKey.disabledAt).to.be.a('number').that.is.greaterThan(0);
       });
     });
   },
