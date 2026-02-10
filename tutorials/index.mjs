@@ -5,6 +5,7 @@ export { retrieveIdentity } from './identity/retrieveIdentity.mjs';
 export { updateIdentity } from './identity/updateIdentity.mjs';
 export { transferCredits } from './identity/transferCredits.mjs';
 export { withdrawCredits } from './identity/withdrawCredits.mjs';
+export { deriveKeysFromMnemonic } from './identity/deriveKeysFromMnemonic.mjs';
 export { retrieveNameByName } from './name/retrieveNameByName.mjs';
 export { retrieveNameByRecord } from './name/retrieveNameByRecord.mjs';
 export { retrieveNameBySearch } from './name/retrieveNameBySearch.mjs';

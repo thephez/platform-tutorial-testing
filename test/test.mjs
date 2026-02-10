@@ -9,6 +9,7 @@ import {
   updateIdentity,
   transferCredits,
   withdrawCredits,
+  deriveKeysFromMnemonic,
   retrieveNameByName,
   retrieveNameByRecord,
   retrieveNameBySearch,
@@ -46,7 +47,9 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       const json = result.toJSON();
       expect(json).to.have.nested.property('version.software.dapi');
       expect(json).to.have.nested.property('chain.latestBlockHeight');
-      expect(json).to.have.nested.property('network.chainId').that.includes('dash');
+      expect(json)
+        .to.have.nested.property('network.chainId')
+        .that.includes('dash');
     });
 
     it('getSystemInfo - should return status and epoch', async function () {
@@ -57,7 +60,9 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(statusJson).to.have.nested.property('version.software.dapi');
       const epochJson = result.currentEpoch.toJSON();
       expect(epochJson).to.have.nested.property('V0.index').that.is.a('number');
-      expect(epochJson).to.have.nested.property('V0.protocol_version').that.is.a('number');
+      expect(epochJson)
+        .to.have.nested.property('V0.protocol_version')
+        .that.is.a('number');
     });
   });
 
@@ -69,7 +74,52 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       const json = result.toJSON();
       expect(json).to.have.property('id', identityId);
       expect(json).to.have.property('balance').that.is.a('number');
-      expect(json).to.have.property('publicKeys').that.is.an('array').with.length.greaterThan(0);
+      expect(json)
+        .to.have.property('publicKeys')
+        .that.is.an('array')
+        .with.length.greaterThan(0);
+    });
+  });
+
+  describe('Mnemonic key derivation', function () {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    it('deriveKeysFromMnemonic - should derive deterministic keys from mnemonic', async function () {
+      const keys = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 0, 3);
+      expect(keys).to.be.an('array').with.lengthOf(3);
+
+      keys.forEach((key) => {
+        expect(key).to.have.property('keyIndex').that.is.a('number');
+        expect(key).to.have.property('path').that.is.a('string');
+        expect(key).to.have.property('privateKeyWif').that.is.a('string');
+        expect(key).to.have.property('publicKey').that.is.a('string');
+        expect(key).to.have.property('address').that.is.a('string');
+        expect(key).to.have.property('network', 'testnet');
+      });
+
+      // Verify DIP-9 path structure
+      expect(keys[0].path).to.equal("m/9'/1'/5'/0'/0'/0'");
+      expect(keys[1].path).to.equal("m/9'/1'/5'/0'/0'/1'");
+      expect(keys[2].path).to.equal("m/9'/1'/5'/0'/0'/2'");
+
+      // Keys should be unique
+      const wifs = keys.map((k) => k.privateKeyWif);
+      expect(new Set(wifs).size).to.equal(3);
+    });
+
+    it('deriveKeysFromMnemonic - should be deterministic (same mnemonic = same keys)', async function () {
+      const keys1 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 0, 1);
+      const keys2 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 0, 1);
+      expect(keys1[0].privateKeyWif).to.equal(keys2[0].privateKeyWif);
+      expect(keys1[0].publicKey).to.equal(keys2[0].publicKey);
+    });
+
+    it('deriveKeysFromMnemonic - different identity indices should produce different keys', async function () {
+      const keys0 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 0, 1);
+      const keys1 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 1, 1);
+      expect(keys0[0].privateKeyWif).to.not.equal(keys1[0].privateKeyWif);
+      expect(keys1[0].path).to.equal("m/9'/1'/5'/0'/1'/0'");
     });
   });
 
@@ -195,7 +245,10 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         // User data is accessible via toJSON
         const json = doc.toJSON();
-        expect(json).to.have.property('message').that.is.a('string').and.includes('Test @');
+        expect(json)
+          .to.have.property('message')
+          .that.is.a('string')
+          .and.includes('Test @');
       });
 
       it('updateDocument - should replace a document', async function () {
@@ -223,7 +276,10 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(doc.dataContractId.toString()).to.equal(testContractId);
 
         const json = doc.toJSON();
-        expect(json).to.have.property('message').that.is.a('string').and.includes('Updated @');
+        expect(json)
+          .to.have.property('message')
+          .that.is.a('string')
+          .and.includes('Updated @');
       });
 
       it('deleteDocument - should delete a document', async function () {
@@ -276,7 +332,10 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         const json = contract.toJSON();
         expect(json).to.have.property('config').that.is.an('object');
         expect(json.config).to.have.property('readonly', false);
-        expect(json.config).to.have.property('documentsMutableContractDefault', true);
+        expect(json.config).to.have.property(
+          'documentsMutableContractDefault',
+          true,
+        );
         expect(json).to.have.property('documentSchemas').that.is.an('object');
         expect(json.documentSchemas).to.have.property('note');
       });
@@ -314,7 +373,8 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(json).to.have.property('documentSchemas').that.is.an('object');
         expect(json.documentSchemas).to.have.property('note');
         expect(json.documentSchemas).to.have.property('extendedNote');
-        expect(json.documentSchemas.extendedNote).to.have.property('properties')
+        expect(json.documentSchemas.extendedNote)
+          .to.have.property('properties')
           .that.has.property('author');
       });
     });
@@ -332,8 +392,12 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(result).to.be.an('object');
         expect(result.constructor.name).to.equal('RegisterDpnsNameResult');
         expect(result.fullDomainName).to.equal(`${label}.dash`);
-        expect(result.preorderDocumentId.toString()).to.be.a('string').with.length.greaterThan(0);
-        expect(result.domainDocumentId.toString()).to.be.a('string').with.length.greaterThan(0);
+        expect(result.preorderDocumentId.toString())
+          .to.be.a('string')
+          .with.length.greaterThan(0);
+        expect(result.domainDocumentId.toString())
+          .to.be.a('string')
+          .with.length.greaterThan(0);
       });
     });
 
@@ -353,7 +417,9 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           100000,
         );
         expect(result).to.be.an('object');
-        expect(result.constructor.name).to.equal('IdentityCreditTransferResult');
+        expect(result.constructor.name).to.equal(
+          'IdentityCreditTransferResult',
+        );
         expect(typeof result.senderBalance).to.equal('bigint');
         expect(result.senderBalance > 0n).to.be.true;
         expect(typeof result.recipientBalance).to.equal('bigint');
@@ -439,7 +505,9 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         const afterAddJson = afterAdd.toJSON();
         expect(afterAddJson.revision).to.be.greaterThan(resultJson.revision);
         const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
-        expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an('object');
+        expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
+          'object',
+        );
         expect(addedKey.purpose).to.equal(0); // AUTHENTICATION
         expect(addedKey.securityLevel).to.equal(2); // HIGH
         expect(addedKey.type).to.equal(0); // ECDSA_SECP256K1
@@ -458,10 +526,18 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           // Re-fetch and verify key was disabled
           const afterDisable = await writeSdk.identities.fetch(writeIdentityId);
           const afterDisableJson = afterDisable.toJSON();
-          expect(afterDisableJson.revision).to.be.greaterThan(afterAddJson.revision);
-          const disabledKey = afterDisableJson.publicKeys.find((k) => k.id === newKeyId);
-          expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an('object');
-          expect(disabledKey.disabledAt).to.be.a('number').that.is.greaterThan(0);
+          expect(afterDisableJson.revision).to.be.greaterThan(
+            afterAddJson.revision,
+          );
+          const disabledKey = afterDisableJson.publicKeys.find(
+            (k) => k.id === newKeyId,
+          );
+          expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an(
+            'object',
+          );
+          expect(disabledKey.disabledAt)
+            .to.be.a('number')
+            .that.is.greaterThan(0);
         }
       });
     });
