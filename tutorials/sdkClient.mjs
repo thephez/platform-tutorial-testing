@@ -9,7 +9,9 @@ export async function createClient(network = 'testnet') {
 
   const factory = factories[network];
   if (!factory) {
-    throw new Error(`Unknown network "${network}". Use: ${Object.keys(factories).join(', ')}`);
+    throw new Error(
+      `Unknown network "${network}". Use: ${Object.keys(factories).join(', ')}`,
+    );
   }
 
   const sdk = factory();

@@ -129,7 +129,9 @@ export async function whereIn(
       [
         'normalizedLabel',
         'in',
-        await Promise.all(dpnsNames.map((name) => sdk.dpns.convertToHomographSafe(name))),
+        await Promise.all(
+          dpnsNames.map((name) => sdk.dpns.convertToHomographSafe(name)),
+        ),
       ],
     ],
     orderBy: [['normalizedLabel', orderByDirection]],
