@@ -23,16 +23,18 @@ import {
   updateDocument,
   deleteDocument,
 } from '../tutorials/index.mjs';
-import { DPNS_CONTRACT_ID as dpnsContractId } from '../tutorials/constants.mjs';
+import {
+  DPNS_CONTRACT_ID,
+  IDENTITY_ID,
+  IDENTITY_NAME,
+  CORE_WITHDRAWAL_ADDRESS,
+} from '../tutorials/constants.mjs';
 
 const require = createRequire(import.meta.url);
 const contractMinimal = require('../tutorials/contract/contracts/contractMinimal.json');
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
-
-const identityId = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit';
-const identityName = 'Tutorial-Test-000000';
 
 let sdk;
 
@@ -71,12 +73,12 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
   });
 
   describe('Identity tutorials', function () {
-    it(`retrieveIdentity - should fetch identity (${identityId})`, async function () {
-      const result = await retrieveIdentity(sdk, identityId);
+    it(`retrieveIdentity - should fetch identity (${IDENTITY_ID})`, async function () {
+      const result = await retrieveIdentity(sdk, IDENTITY_ID);
       expect(result).to.be.an('object');
       expect(result.toJSON).to.be.a('function');
       const json = result.toJSON();
-      expect(json).to.have.property('id', identityId);
+      expect(json).to.have.property('id', IDENTITY_ID);
       expect(json).to.have.property('balance').that.is.a('number');
       expect(json)
         .to.have.property('publicKeys')
@@ -128,14 +130,14 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
   });
 
   describe('Name tutorials', function () {
-    it(`retrieveNameByName - should resolve name (${identityName})`, async function () {
-      const result = await retrieveNameByName(sdk, identityName);
+    it(`retrieveNameByName - should resolve name (${IDENTITY_NAME})`, async function () {
+      const result = await retrieveNameByName(sdk, IDENTITY_NAME);
       expect(result).to.be.a('string');
-      expect(result).to.equal(identityId);
+      expect(result).to.equal(IDENTITY_ID);
     });
 
-    it(`retrieveNameByRecord - should return names for identity (${identityId})`, async function () {
-      const result = await retrieveNameByRecord(sdk, identityId);
+    it(`retrieveNameByRecord - should return names for identity (${IDENTITY_ID})`, async function () {
+      const result = await retrieveNameByRecord(sdk, IDENTITY_ID);
       expect(result).to.be.an('array').with.length.greaterThan(0);
       expect(result[0]).to.be.a('string').that.includes('.dash');
     });
@@ -154,12 +156,12 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
   });
 
   describe('Contract tutorials', function () {
-    it(`retrieveContract - should fetch DPNS contract (${dpnsContractId})`, async function () {
-      const result = await retrieveContract(sdk, dpnsContractId);
+    it(`retrieveContract - should fetch DPNS contract (${DPNS_CONTRACT_ID})`, async function () {
+      const result = await retrieveContract(sdk, DPNS_CONTRACT_ID);
       expect(result).to.be.an('object');
       expect(result.toJSON).to.be.a('function');
       const json = result.toJSON();
-      expect(json).to.have.property('id', dpnsContractId);
+      expect(json).to.have.property('id', DPNS_CONTRACT_ID);
       expect(json).to.have.property('config');
       expect(json).to.have.property('documentSchemas');
       expect(json).to.have.property('version').that.is.a('number');
@@ -168,7 +170,7 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
 
   describe('Document tutorials', function () {
     it('getDocuments - should query DPNS domain documents', async function () {
-      const result = await getDocuments(sdk, dpnsContractId, 'domain', 2);
+      const result = await getDocuments(sdk, DPNS_CONTRACT_ID, 'domain', 2);
       expect(result).to.be.instanceOf(Map);
       expect(result.size).to.equal(2);
       const [firstId, firstDoc] = result.entries().next().value;
@@ -214,6 +216,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(contract.constructor.name).to.equal('DataContract');
 
         contractId = contract.id?.toString() || contract.getId?.().toString();
+        this.test.title += ` (${contractId})`;
         expect(contractId).to.be.a('string').with.length.greaterThan(0);
         expect(contract.version).to.equal(1);
         expect(contract.ownerId.toString()).to.equal(writeIdentityId);
@@ -256,6 +259,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(updated.constructor.name).to.equal('DataContract');
         expect(updated.id.toString()).to.equal(contractId);
         expect(updated.version).to.be.greaterThan(1);
+        this.test.title += ` (${contractId} v${updated.version})`;
         expect(updated.ownerId.toString()).to.equal(writeIdentityId);
 
         // Merged schemas are only accessible via toJSON
@@ -289,6 +293,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(doc.constructor.name).to.equal('Document');
 
         createdDocumentId = doc.id?.toString() || doc.getId?.().toString();
+        this.test.title += ` (${createdDocumentId})`;
         expect(createdDocumentId).to.be.a('string').with.length.greaterThan(0);
         expect(doc.revision).to.equal(1n);
         expect(doc.documentTypeName).to.equal('note');
@@ -323,6 +328,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         expect(doc.id.toString()).to.equal(createdDocumentId);
         expect(doc.revision > 1n).to.be.true;
+        this.test.title += ` (${createdDocumentId} v${Number(doc.revision)})`;
         expect(doc.documentTypeName).to.equal('note');
         expect(doc.ownerId.toString()).to.equal(writeIdentityId);
         expect(doc.dataContractId.toString()).to.equal(contractId);
@@ -349,6 +355,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
         // deleteDocument returns undefined (void) on success
         expect(result).to.be.undefined;
+        this.test.title += ` (${createdDocumentId})`;
       });
     });
 
@@ -374,16 +381,16 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
     });
 
-    describe.skip('Identity write tutorials', function () {
+    describe('Identity write tutorials', function () {
       let newKeyId;
 
-      it.skip('transferCredits - should transfer credits to another identity', async function () {
+      it(`transferCredits - should transfer credits to another identity (${IDENTITY_ID})`, async function () {
         if (!transferKeyWif) {
           this.skip('TRANSFER_KEY_WIF not set');
           return;
         }
         // Transfer a small amount to a known testnet identity
-        const recipientId = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit';
+        const recipientId = IDENTITY_ID;
         const result = await transferCredits(
           writeSdk,
           writeIdentityId,
@@ -401,14 +408,13 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(result.recipientBalance > 0n).to.be.true;
       });
 
-      it.skip('withdrawCredits - should withdraw credits to a Dash address', async function () {
+      it(`withdrawCredits - should withdraw credits to a Dash address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
         if (!transferKeyWif) {
           this.skip('TRANSFER_KEY_WIF not set');
           return;
         }
         // Withdraw minimal amount to testnet wallet address
         // Platform minimum is 190,000 credits
-        const coreAddress = 'yWfPMJSN2agyzoKuEM7nW8HoPVBfBqNJfm';
         const withdrawAmount = 200000;
 
         const remainingBalance = await withdrawCredits(
@@ -416,7 +422,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           writeIdentityId,
           transferKeyWif,
           withdrawAmount,
-          coreAddress,
+          CORE_WITHDRAWAL_ADDRESS,
         );
 
         // SDK returns remaining balance as bigint
@@ -433,7 +439,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         // Generate a unique keypair for the new identity key
         const keyPair = await wallet.generateKeyPair('testnet');
-        console.log('        New key WIF:', keyPair.privateKeyWif);
+        console.log('\tNew key WIF:', keyPair.privateKeyWif);
         const pubKeyData = Uint8Array.from(
           Buffer.from(keyPair.publicKey, 'hex'),
         );
@@ -486,6 +492,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(addedKey.securityLevel).to.equal(2); // HIGH
         expect(addedKey.type).to.equal(0); // ECDSA_SECP256K1
         expect(addedKey.disabledAt).to.be.null;
+        this.test.title += ` (key ${newKeyId})`;
       });
 
       it('updateIdentity - should disable a key on an identity', async function () {
@@ -514,6 +521,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           'object',
         );
         expect(disabledKey.disabledAt).to.be.a('number').that.is.greaterThan(0);
+        this.test.title += ` (key ${newKeyId})`;
       });
     });
   },

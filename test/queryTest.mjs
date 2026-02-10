@@ -2,13 +2,17 @@ import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { createClient } from '../tutorials/sdkClient.mjs';
 import * as testQueries from '../queries/testQueries.mjs';
+import {
+  IDENTITY_ID,
+  IDENTITY_NAME,
+  IDENTITY_NAME_BACKUP,
+  DOCUMENT_ID,
+} from '../tutorials/constants.mjs';
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
 
-const documentId = 'E8m6NCCnpschx4WRfk1uLMHqttqMJKPwYt8fWaVSJPrL';
-const identityId = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit';
-const identityName = ['Tutorial-Test-000000', 'Tutorial-Test-000000-backup'];
+const identityName = [IDENTITY_NAME, IDENTITY_NAME_BACKUP];
 const startsWithString = 'Tutorial-Test-';
 
 let sdk;
@@ -38,18 +42,18 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
 
   describe('Query modifiers', function () {
     // Skip: bare startAt query fails proof verification (dashpay/platform#3078)
-    it.skip(`startAt - should return documents starting at document id - (${documentId})`, async function () {
-      const result = docsFromMap(await testQueries.startAt(sdk, documentId, 1));
+    it.skip(`startAt - should return documents starting at document id - (${DOCUMENT_ID})`, async function () {
+      const result = docsFromMap(await testQueries.startAt(sdk, DOCUMENT_ID, 1));
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`startAtComplex (asc) - should return name(s) starting at document id - (${documentId})`, async function () {
+    it(`startAtComplex (asc) - should return name(s) starting at document id - (${DOCUMENT_ID})`, async function () {
       const result = docsFromMap(
         await testQueries.startAtComplex(
           sdk,
-          documentId,
+          DOCUMENT_ID,
           startsWithString,
           'asc',
           1,
@@ -60,11 +64,11 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`startAtComplex (desc) - should return name(s) starting at document id - (${documentId})`, async function () {
+    it(`startAtComplex (desc) - should return name(s) starting at document id - (${DOCUMENT_ID})`, async function () {
       const result = docsFromMap(
         await testQueries.startAtComplex(
           sdk,
-          documentId,
+          DOCUMENT_ID,
           startsWithString,
           'desc',
           1,
@@ -75,8 +79,8 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`startAfter - should return documents starting after document id - (${documentId})`, async function () {
-      const result = docsFromMap(await testQueries.startAfter(sdk, documentId));
+    it(`startAfter - should return documents starting after document id - (${DOCUMENT_ID})`, async function () {
+      const result = docsFromMap(await testQueries.startAfter(sdk, DOCUMENT_ID));
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
@@ -84,72 +88,72 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
   });
 
   describe('Where - comparison operators', function () {
-    it(`< id (desc) - should return document before id - (${identityId})`, async function () {
+    it(`< id (desc) - should return document before id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereLessThanId(sdk, identityId, 'desc'),
+        await testQueries.whereLessThanId(sdk, IDENTITY_ID, 'desc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`< id (asc) - should return document before id - (${identityId})`, async function () {
+    it(`< id (asc) - should return document before id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereLessThanId(sdk, identityId, 'asc'),
+        await testQueries.whereLessThanId(sdk, IDENTITY_ID, 'asc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`<= id (desc) - should return documents up to id - (${identityId})`, async function () {
+    it(`<= id (desc) - should return documents up to id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereLessThanEqualToId(sdk, identityId, 'desc'),
+        await testQueries.whereLessThanEqualToId(sdk, IDENTITY_ID, 'desc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`<= id (asc) - should return documents up to id - (${identityId})`, async function () {
+    it(`<= id (asc) - should return documents up to id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereLessThanEqualToId(sdk, identityId, 'asc'),
+        await testQueries.whereLessThanEqualToId(sdk, IDENTITY_ID, 'asc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`> id (desc) - should return document after id - (${identityId})`, async function () {
+    it(`> id (desc) - should return document after id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereGreaterThanId(sdk, identityId, 'desc'),
+        await testQueries.whereGreaterThanId(sdk, IDENTITY_ID, 'desc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`> id (asc) - should return document after id - (${identityId})`, async function () {
+    it(`> id (asc) - should return document after id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereGreaterThanId(sdk, identityId, 'asc'),
+        await testQueries.whereGreaterThanId(sdk, IDENTITY_ID, 'asc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`>= (desc) - should return documents from id - (${identityId})`, async function () {
+    it(`>= (desc) - should return documents from id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereGreaterThanEqualToId(sdk, identityId, 'desc'),
+        await testQueries.whereGreaterThanEqualToId(sdk, IDENTITY_ID, 'desc'),
       );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.not.be.undefined;
     });
 
-    it(`>= (asc) - should return documents from id - (${identityId})`, async function () {
+    it(`>= (asc) - should return documents from id - (${IDENTITY_ID})`, async function () {
       const result = docsFromMap(
-        await testQueries.whereGreaterThanEqualToId(sdk, identityId, 'asc', 2),
+        await testQueries.whereGreaterThanEqualToId(sdk, IDENTITY_ID, 'asc', 2),
       );
 
       expect(result).to.have.lengthOf(2);
