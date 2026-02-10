@@ -1,7 +1,15 @@
 import { createRequire } from 'node:module';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
-import { IdentityPublicKeyInCreation, wallet } from '@dashevo/evo-sdk';
+import {
+  DataContract,
+  Document,
+  Identity,
+  IdentityCreditTransferResult,
+  IdentityPublicKeyInCreation,
+  RegisterDpnsNameResult,
+  wallet,
+} from '@dashevo/evo-sdk';
 import {
   createClient,
   checkNetworkConnection,
@@ -75,7 +83,7 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
   describe('Identity tutorials', function () {
     it(`retrieveIdentity - should fetch identity (${IDENTITY_ID})`, async function () {
       const result = await retrieveIdentity(sdk, IDENTITY_ID);
-      expect(result).to.be.an('object');
+      expect(result).to.be.an.instanceOf(Identity);
       expect(result.toJSON).to.be.a('function');
       const json = result.toJSON();
       expect(json).to.have.property('id', IDENTITY_ID);
@@ -148,7 +156,7 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(result.size).to.be.greaterThan(0);
       const [firstId, firstDoc] = result.entries().next().value;
       expect(firstId.toString()).to.be.a('string').with.length.greaterThan(0);
-      expect(firstDoc).to.be.an('object');
+      expect(firstDoc).to.be.an.instanceOf(Document);
       const docJson = firstDoc.toJSON();
       expect(docJson).to.have.property('label').that.is.a('string');
       expect(docJson).to.have.property('normalizedLabel').that.is.a('string');
@@ -158,7 +166,7 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
   describe('Contract tutorials', function () {
     it(`retrieveContract - should fetch DPNS contract (${DPNS_CONTRACT_ID})`, async function () {
       const result = await retrieveContract(sdk, DPNS_CONTRACT_ID);
-      expect(result).to.be.an('object');
+      expect(result).to.be.an.instanceOf(DataContract);
       expect(result.toJSON).to.be.a('function');
       const json = result.toJSON();
       expect(json).to.have.property('id', DPNS_CONTRACT_ID);
@@ -212,8 +220,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           writeKeyId,
           contractMinimal,
         );
-        expect(contract).to.be.an('object');
-        expect(contract.constructor.name).to.equal('DataContract');
+        expect(contract).to.be.an.instanceOf(DataContract);
 
         contractId = contract.id?.toString() || contract.getId?.().toString();
         this.test.title += ` (${contractId})`;
@@ -255,8 +262,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           contractId,
           newSchemas,
         );
-        expect(updated).to.be.an('object');
-        expect(updated.constructor.name).to.equal('DataContract');
+        expect(updated).to.be.an.instanceOf(DataContract);
         expect(updated.id.toString()).to.equal(contractId);
         expect(updated.version).to.be.greaterThan(1);
         this.test.title += ` (${contractId} v${updated.version})`;
@@ -289,8 +295,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           'note',
           { message: `Test @ ${new Date().toUTCString()}` },
         );
-        expect(doc).to.be.an('object');
-        expect(doc.constructor.name).to.equal('Document');
+        expect(doc).to.be.an.instanceOf(Document);
 
         createdDocumentId = doc.id?.toString() || doc.getId?.().toString();
         this.test.title += ` (${createdDocumentId})`;
@@ -323,8 +328,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           2,
           { message: `Updated @ ${new Date().toUTCString()}` },
         );
-        expect(doc).to.be.an('object');
-        expect(doc.constructor.name).to.equal('Document');
+        expect(doc).to.be.an.instanceOf(Document);
 
         expect(doc.id.toString()).to.equal(createdDocumentId);
         expect(doc.revision > 1n).to.be.true;
@@ -359,7 +363,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
     });
 
-    describe.skip('Name tutorials', function () {
+    describe('Name tutorials', function () {
       it('registerName - should register a DPNS name', async function () {
         const label = `tut0r1a1-test-${Date.now()}`;
         const result = await registerName(
@@ -369,8 +373,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           writeKeyId,
           label,
         );
-        expect(result).to.be.an('object');
-        expect(result.constructor.name).to.equal('RegisterDpnsNameResult');
+        expect(result).to.be.an.instanceOf(RegisterDpnsNameResult);
         expect(result.fullDomainName).to.equal(`${label}.dash`);
         expect(result.preorderDocumentId.toString())
           .to.be.a('string')
@@ -398,10 +401,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           recipientId,
           100000,
         );
-        expect(result).to.be.an('object');
-        expect(result.constructor.name).to.equal(
-          'IdentityCreditTransferResult',
-        );
+        expect(result).to.be.an.instanceOf(IdentityCreditTransferResult);
         expect(typeof result.senderBalance).to.equal('bigint');
         expect(result.senderBalance > 0n).to.be.true;
         expect(typeof result.recipientBalance).to.equal('bigint');
@@ -474,8 +474,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           [keyPair.privateKeyWif],
         );
 
-        // Validate the returned identity object
-        expect(result).to.be.an('object');
+        expect(result).to.be.an.instanceOf(Identity);
         const resultJson = result.toJSON();
         expect(resultJson).to.have.property('id', writeIdentityId);
         expect(resultJson).to.have.property('balance').that.is.a('number');

@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import dotenv from 'dotenv';
+import { Document } from '@dashevo/evo-sdk';
 import { createClient } from '../tutorials/sdkClient.mjs';
 import * as testQueries from '../queries/testQueries.mjs';
 import {
@@ -36,7 +37,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
   });
 
@@ -46,7 +47,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       const result = docsFromMap(await testQueries.startAt(sdk, DOCUMENT_ID, 1));
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`startAtComplex (asc) - should return name(s) starting at document id - (${DOCUMENT_ID})`, async function () {
@@ -61,7 +62,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf.at.most(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`startAtComplex (desc) - should return name(s) starting at document id - (${DOCUMENT_ID})`, async function () {
@@ -76,14 +77,14 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf.at.most(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`startAfter - should return documents starting after document id - (${DOCUMENT_ID})`, async function () {
       const result = docsFromMap(await testQueries.startAfter(sdk, DOCUMENT_ID));
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
   });
 
@@ -94,7 +95,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`< id (asc) - should return document before id - (${IDENTITY_ID})`, async function () {
@@ -103,7 +104,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`<= id (desc) - should return documents up to id - (${IDENTITY_ID})`, async function () {
@@ -112,7 +113,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`<= id (asc) - should return documents up to id - (${IDENTITY_ID})`, async function () {
@@ -121,7 +122,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`> id (desc) - should return document after id - (${IDENTITY_ID})`, async function () {
@@ -130,7 +131,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`> id (asc) - should return document after id - (${IDENTITY_ID})`, async function () {
@@ -139,7 +140,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`>= (desc) - should return documents from id - (${IDENTITY_ID})`, async function () {
@@ -148,7 +149,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`>= (asc) - should return documents from id - (${IDENTITY_ID})`, async function () {
@@ -201,7 +202,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
 
     it(`startsWith (desc) - should return name starting with string - (${startsWithString})`, async function () {
@@ -210,7 +211,7 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
       );
 
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.not.be.undefined;
+      expect(result[0]).to.be.an.instanceOf(Document);
     });
   });
 });
