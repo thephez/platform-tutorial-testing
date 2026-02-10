@@ -4,8 +4,9 @@ const sdk = EvoSDK.testnetTrusted();
 await sdk.connect(); */
 
 async function retrieveNameByName(sdk, name) {
-  // Resolve a full name (e.g., myname.dash) to its identity ID
-  // NOTE: Use lowercase characters only
+  // Resolve a DPNS name to its identity ID
+  // Pass the label only (e.g., 'alice'), not the full domain.
+  // '.dash' is appended automatically below.
   return sdk.dpns.resolveName(`${name}.dash`);
 }
 

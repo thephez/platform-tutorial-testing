@@ -3,7 +3,7 @@
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect(); */
 
-const DPNS_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec';
+import { DPNS_CONTRACT_ID } from '../constants.mjs';
 
 async function retrieveNameBySearch(sdk, namePrefix) {
   // Search for DPNS names matching a prefix

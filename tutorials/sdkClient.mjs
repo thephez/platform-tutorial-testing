@@ -1,12 +1,18 @@
 import { EvoSDK } from '@dashevo/evo-sdk';
 
 export async function createClient(network = 'testnet') {
-  let sdk;
-  if (network === 'mainnet') {
-    sdk = EvoSDK.mainnetTrusted();
-  } else {
-    sdk = EvoSDK.testnetTrusted();
+  const factories = {
+    testnet: () => EvoSDK.testnetTrusted(),
+    mainnet: () => EvoSDK.mainnetTrusted(),
+    local: () => EvoSDK.localTrusted(),
+  };
+
+  const factory = factories[network];
+  if (!factory) {
+    throw new Error(`Unknown network "${network}". Use: ${Object.keys(factories).join(', ')}`);
   }
+
+  const sdk = factory();
   await sdk.connect();
   return sdk;
 }

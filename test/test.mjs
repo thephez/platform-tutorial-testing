@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import {
   createClient,
   checkNetworkConnection,
-  dapiClientMethods,
+  getSystemInfo,
   retrieveIdentity,
   retrieveNameByName,
   retrieveNameByRecord,
@@ -11,13 +11,13 @@ import {
   retrieveContract,
   getDocuments,
 } from '../tutorials/index.mjs';
+import { DPNS_CONTRACT_ID as dpnsContractId } from '../tutorials/constants.mjs';
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
 
 const identityId = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit';
 const identityName = 'Tutorial-Test-000000';
-const dpnsContractId = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec';
 
 let sdk;
 
@@ -34,8 +34,8 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(result).to.not.be.undefined;
     });
 
-    it('dapiClientMethods - should return status and epoch', async function () {
-      const result = await dapiClientMethods(sdk);
+    it('getSystemInfo - should return status and epoch', async function () {
+      const result = await getSystemInfo(sdk);
       expect(result.status).to.not.be.undefined;
       expect(result.currentEpoch).to.not.be.undefined;
     });

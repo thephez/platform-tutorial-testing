@@ -1,13 +1,4 @@
-// DPNS contract ID for testnet
-const DPNS_CONTRACT_ID = 'GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec';
-
-function convertToHomographSafeChars(input) {
-  return input.toLowerCase().replace(/[oli]/g, (match) => {
-    if (match === 'o') return '0';
-    if (match === 'l' || match === 'i') return '1';
-    return match;
-  });
-}
+import { DPNS_CONTRACT_ID } from '../tutorials/constants.mjs';
 
 export async function startAt(sdk, startAtId, limit = 1) {
   return sdk.documents.query({
@@ -35,7 +26,7 @@ export async function startAtComplex(
       [
         'normalizedLabel',
         'startsWith',
-        convertToHomographSafeChars(startsWithString),
+        await sdk.dpns.convertToHomographSafe(startsWithString),
       ],
     ],
     orderBy: [['normalizedLabel', orderByDirection]],
@@ -52,7 +43,7 @@ export async function startAfter(sdk, startAfterId, limit = 1) {
 }
 
 export async function whereEqual(sdk, dpnsName) {
-  const normalizedLabel = convertToHomographSafeChars(dpnsName);
+  const normalizedLabel = await sdk.dpns.convertToHomographSafe(dpnsName);
   return sdk.documents.query({
     dataContractId: DPNS_CONTRACT_ID,
     documentTypeName: 'domain',
@@ -138,7 +129,7 @@ export async function whereIn(
       [
         'normalizedLabel',
         'in',
-        dpnsNames.map((name) => convertToHomographSafeChars(name)),
+        await Promise.all(dpnsNames.map((name) => sdk.dpns.convertToHomographSafe(name))),
       ],
     ],
     orderBy: [['normalizedLabel', orderByDirection]],
@@ -160,7 +151,7 @@ export async function whereStartsWith(
       [
         'normalizedLabel',
         'startsWith',
-        convertToHomographSafeChars(startsWithName),
+        await sdk.dpns.convertToHomographSafe(startsWithName),
       ],
     ],
     orderBy: [['normalizedLabel', orderByDirection]],
