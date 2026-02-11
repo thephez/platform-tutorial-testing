@@ -55,7 +55,7 @@ const contractWithIndex = require('../tutorials/contract/contracts/contractWithI
 const contractWithTimestamps = require('../tutorials/contract/contracts/contractWithTimestamps.json');
 const contractWithBinaryData = require('../tutorials/contract/contracts/contractWithBinaryData.json');
 const contractNft = require('../tutorials/contract/contracts/contractNft.json');
-const contractWithRef = require('../tutorials/contract/contracts/contractWithRef.json');
+const contractTokenFile = require('../tutorials/contract/contracts/contractToken.json');
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
@@ -448,6 +448,23 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(contract).to.be.an.instanceOf(DataContract);
         const json = contract.toJSON();
         expect(json.documentSchemas).to.have.property('card');
+        this.test.title += ` (${contract.id})`;
+      });
+
+      // TODO: Enable once the SDK can handle TokenConfiguration
+      it.skip('should register a token contract', async function () {
+        const contract = await registerContract(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractTokenFile.documentSchemas,
+          undefined,
+          contractTokenFile.tokens,
+        );
+        expect(contract).to.be.an.instanceOf(DataContract);
+        const json = contract.toJSON();
+        expect(json).to.have.property('tokens').that.is.an('object');
         this.test.title += ` (${contract.id})`;
       });
     });
