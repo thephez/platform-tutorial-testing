@@ -28,6 +28,9 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
 
   before(async function () {
     sdk = await createClient(network);
+
+    // Warm-up SDK
+    await testQueries.whereEqual(sdk, identityName[0]);
   });
 
   describe('Basic where queries', function () {
