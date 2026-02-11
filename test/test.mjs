@@ -450,6 +450,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(json.documentSchemas).to.have.property('card');
         this.test.title += ` (${contract.id})`;
       });
+    });
 
     describe('Document write tutorials', function () {
       let createdDocumentId;
