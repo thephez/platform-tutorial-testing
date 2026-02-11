@@ -6,11 +6,13 @@
   "scripts": {
     "fmt": "npx prettier@2 --write '**/*.{,js,mjs}'",
     "lint": "eslint .",
-    "test:tutorials": "mocha test/test.mjs --exit",
-    "test:queries": "mocha test/queryTest.mjs --exit",
+    "test:tutorials": "mocha --slow 500 test/test.mjs --grep 'EVO SDK Tutorial Tests' --exit",
+    "test:tutorials:read-only": "mocha --slow 350 test/test.mjs --grep 'EVO SDK Tutorial Tests \\(read-only\\)' --exit",
+    "test:tutorials:read-write": "mocha --slow 350 test/test.mjs --grep 'EVO SDK Tutorial Tests \\(read-write\\)' --exit",
+    "test:queries": "mocha --slow 150 test/queryTest.mjs --exit",
     "test:deprecated:integration": "mocha test/js-dash-sdk-deprecated/test.js --exit",
     "test:deprecated:queries": "mocha test/js-dash-sdk-deprecated/queryTest.js --exit",
-    "test": "mocha test/test.mjs test/queryTest.mjs --exit"
+    "test": "mocha --slow 500 test/test.mjs test/queryTest.mjs --exit"
   },
   "author": "thephez",
   "license": "MIT",
