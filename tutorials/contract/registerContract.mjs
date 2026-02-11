@@ -15,6 +15,8 @@ async function registerContract(
   privateKeyWif,
   identityPublicKeyId,
   documentSchemas,
+  definitions,
+  tokens,
 ) {
   // Fetch the identity and get the signing key by ID
   const identity = await sdk.identities.fetch(identityId);
@@ -33,8 +35,8 @@ async function registerContract(
     identityId,
     nextNonce,
     documentSchemas,
-    undefined, // definitions
-    undefined, // tokens
+    definitions, // optional: reusable $ref definitions
+    tokens, // optional: token configuration
     false, // full_validation
     undefined, // platform_version
   );

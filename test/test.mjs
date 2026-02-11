@@ -30,16 +30,30 @@ import {
   submitDocument,
   updateDocument,
   deleteDocument,
+  retrieveIdentityBalance,
+  retrieveIdentityKeys,
+  checkNameAvailability,
+  getEpochInfo,
+  getCurrentEpoch,
+  getTokenInfo,
+  getTokenBalances,
 } from '../tutorials/index.mjs';
 import {
   DPNS_CONTRACT_ID,
   IDENTITY_ID,
   IDENTITY_NAME,
   CORE_WITHDRAWAL_ADDRESS,
+  TOKEN_ID,
+  TOKEN_HOLDER_ID,
 } from '../tutorials/constants.mjs';
 
 const require = createRequire(import.meta.url);
 const contractMinimal = require('../tutorials/contract/contracts/contractMinimal.json');
+const contractWithIndex = require('../tutorials/contract/contracts/contractWithIndex.json');
+const contractWithTimestamps = require('../tutorials/contract/contracts/contractWithTimestamps.json');
+const contractWithBinaryData = require('../tutorials/contract/contracts/contractWithBinaryData.json');
+const contractNft = require('../tutorials/contract/contracts/contractNft.json');
+const contractWithRef = require('../tutorials/contract/contracts/contractWithRef.json');
 
 dotenv.config();
 const network = process.env.NETWORK || 'testnet';
@@ -53,7 +67,7 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
     sdk = await createClient(network);
   });
 
-  describe('Network connection', function () {
+  describe('Network connection and System info', function () {
     it('checkNetworkConnection - should return system status', async function () {
       const result = await checkNetworkConnection(sdk);
       expect(result).to.be.an('object');
@@ -78,6 +92,24 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
         .to.have.nested.property('V0.protocol_version')
         .that.is.a('number');
     });
+
+    it('getCurrentEpoch - should return current epoch info', async function () {
+      const result = await getCurrentEpoch(sdk);
+      expect(result).to.be.an('object');
+      const json = result.toJSON();
+      expect(json).to.have.nested.property('V0.index').that.is.a('number');
+      expect(json)
+        .to.have.nested.property('V0.protocol_version')
+        .that.is.a('number');
+    });
+
+    it('getEpochInfo - should return epoch info for a range', async function () {
+      const current = await getCurrentEpoch(sdk);
+      const currentIndex = current.toJSON().V0.index;
+      const result = await getEpochInfo(sdk, Math.max(0, currentIndex - 2), 3);
+      expect(result).to.be.instanceOf(Map);
+      expect(result.size).to.be.greaterThan(0);
+    });
   });
 
   describe('Identity tutorials', function () {
@@ -92,6 +124,26 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
         .to.have.property('publicKeys')
         .that.is.an('array')
         .with.length.greaterThan(0);
+    });
+
+    it(`retrieveIdentityBalance - should fetch identity balance (${IDENTITY_ID})`, async function () {
+      const result = await retrieveIdentityBalance(sdk, IDENTITY_ID);
+      expect(typeof result).to.equal('bigint');
+      expect(result > 0n).to.be.true;
+      this.test.title += ` | balance: ${result}`;
+    });
+
+    it(`retrieveIdentityKeys - should fetch identity keys (${IDENTITY_ID})`, async function () {
+      const result = await retrieveIdentityKeys(sdk, IDENTITY_ID);
+      expect(result).to.be.an('array').with.length.greaterThan(0);
+      result.forEach((key) => {
+        expect(key.toJSON).to.be.a('function');
+        const json = key.toJSON();
+        expect(json).to.have.property('id').that.is.a('number');
+        expect(json).to.have.property('purpose');
+        expect(json).to.have.property('securityLevel');
+        expect(json).to.have.property('type');
+      });
     });
   });
 
@@ -161,6 +213,19 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(docJson).to.have.property('label').that.is.a('string');
       expect(docJson).to.have.property('normalizedLabel').that.is.a('string');
     });
+
+    it(`checkNameAvailability - should return false for a taken name (${IDENTITY_NAME})`, async function () {
+      const result = await checkNameAvailability(sdk, IDENTITY_NAME);
+      expect(result).to.be.false;
+    });
+
+    it('checkNameAvailability - should return true for an available name', async function () {
+      const result = await checkNameAvailability(
+        sdk,
+        `nonexistent-name-${Date.now()}`,
+      );
+      expect(result).to.be.true;
+    });
   });
 
   describe('Contract tutorials', function () {
@@ -187,6 +252,32 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(docJson).to.have.property('$id').that.is.a('string');
       expect(docJson).to.have.property('$ownerId').that.is.a('string');
       expect(docJson).to.have.property('label').that.is.a('string');
+    });
+  });
+
+  describe('Token tutorials', function () {
+    it('getTokenInfo - should return token supply and status', async function () {
+      if (!TOKEN_ID) {
+        this.skip('TOKEN_ID not configured');
+        return;
+      }
+      const result = await getTokenInfo(sdk, TOKEN_ID);
+      expect(result).to.have.property('totalSupply');
+      expect(result).to.have.property('status');
+    });
+
+    it('getTokenBalances - should return token balances', async function () {
+      if (!TOKEN_ID) {
+        this.skip('TOKEN_ID not configured');
+        return;
+      }
+      const result = await getTokenBalances(sdk, TOKEN_ID, [TOKEN_HOLDER_ID]);
+      expect(result).to.be.instanceOf(Map);
+      expect(result.size).to.be.greaterThan(0);
+      const [[id, balance]] = result;
+      expect(id.toString()).to.equal(TOKEN_HOLDER_ID);
+      expect(typeof balance).to.equal('bigint');
+      this.test.title += ` | ${id}: ${balance}`;
     });
   });
 });
@@ -278,6 +369,66 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           .that.has.property('author');
       });
     });
+
+    describe('Additional contract schema tests', function () {
+      it('should register a contract with indices', async function () {
+        const contract = await registerContract(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractWithIndex,
+        );
+        expect(contract).to.be.an.instanceOf(DataContract);
+        const json = contract.toJSON();
+        expect(json.documentSchemas.note).to.have.property('indices');
+        this.test.title += ` (${contract.id})`;
+      });
+
+      it('should register a contract with timestamps', async function () {
+        const contract = await registerContract(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractWithTimestamps,
+        );
+        expect(contract).to.be.an.instanceOf(DataContract);
+        const json = contract.toJSON();
+        expect(json.documentSchemas.note.required).to.include('$createdAt');
+        expect(json.documentSchemas.note.required).to.include('$updatedAt');
+        this.test.title += ` (${contract.id})`;
+      });
+
+      it('should register a contract with binary data', async function () {
+        const contract = await registerContract(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractWithBinaryData,
+        );
+        expect(contract).to.be.an.instanceOf(DataContract);
+        const json = contract.toJSON();
+        expect(json.documentSchemas.block.properties.hash).to.have.property(
+          'byteArray',
+        );
+        this.test.title += ` (${contract.id})`;
+      });
+
+      it('should register an NFT contract', async function () {
+        const contract = await registerContract(
+          writeSdk,
+          writeIdentityId,
+          writePrivateKeyWif,
+          writeKeyId,
+          contractNft,
+        );
+        expect(contract).to.be.an.instanceOf(DataContract);
+        const json = contract.toJSON();
+        expect(json.documentSchemas).to.have.property('card');
+        this.test.title += ` (${contract.id})`;
+      });
 
     describe('Document write tutorials', function () {
       let createdDocumentId;

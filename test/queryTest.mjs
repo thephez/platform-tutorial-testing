@@ -44,7 +44,9 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
   describe('Query modifiers', function () {
     // Skip: bare startAt query fails proof verification (dashpay/platform#3078)
     it.skip(`startAt - should return documents starting at document id - (${DOCUMENT_ID})`, async function () {
-      const result = docsFromMap(await testQueries.startAt(sdk, DOCUMENT_ID, 1));
+      const result = docsFromMap(
+        await testQueries.startAt(sdk, DOCUMENT_ID, 1),
+      );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.be.an.instanceOf(Document);
@@ -81,7 +83,9 @@ describe(`EVO SDK Query Tests (${new Date().toLocaleTimeString()})`, function su
     });
 
     it(`startAfter - should return documents starting after document id - (${DOCUMENT_ID})`, async function () {
-      const result = docsFromMap(await testQueries.startAfter(sdk, DOCUMENT_ID));
+      const result = docsFromMap(
+        await testQueries.startAfter(sdk, DOCUMENT_ID),
+      );
 
       expect(result).to.have.lengthOf(1);
       expect(result[0]).to.be.an.instanceOf(Document);
