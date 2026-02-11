@@ -1,3 +1,4 @@
+export { IdentityKeyManager } from './IdentityKeyManager.mjs';
 export { createClient } from './sdkClient.mjs';
 export { checkNetworkConnection } from './checkNetworkConnection.mjs';
 export { getSystemInfo } from './getSystemInfo.mjs';
