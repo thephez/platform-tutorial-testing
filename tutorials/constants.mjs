@@ -10,7 +10,8 @@ export const CORE_WITHDRAWAL_ADDRESS = 'yWfPMJSN2agyzoKuEM7nW8HoPVBfBqNJfm';
 export const DOCUMENT_ID = 'E8m6NCCnpschx4WRfk1uLMHqttqMJKPwYt8fWaVSJPrL';
 
 // Testnet contract ID with version history for retrieveContractHistory test (skip when empty)
-export const HISTORY_CONTRACT_ID = 'BJV33YPMDfbA2Cxq3hWuTPQjUQCXEXGyq8bzz1YC9C44';
+export const HISTORY_CONTRACT_ID =
+  'BJV33YPMDfbA2Cxq3hWuTPQjUQCXEXGyq8bzz1YC9C44';
 
 // Testnet token ID for token tutorial tests (skip tests when empty)
 export const TOKEN_ID = 'Bu2749WKcP5HFNm8v3k5kshRKDSVyfsJMqoWnXmK4q7h';
