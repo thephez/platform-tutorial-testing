@@ -62,8 +62,8 @@ const network = process.env.NETWORK || 'testnet';
 
 let sdk;
 
-describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function suite() {
-  this.timeout(40000);
+describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()})`, function suite() {
+  this.timeout(30000);
 
   before(async function () {
     sdk = await createClient(network);
@@ -312,9 +312,9 @@ const masterKeyWif = process.env.MASTER_KEY_WIF;
 const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
 (hasWriteCredentials ? describe : describe.skip)(
-  `EVO SDK Write Tutorial Tests (${new Date().toLocaleTimeString()})`,
+  `EVO SDK Tutorial Tests (read-write) (${new Date().toLocaleTimeString()})`,
   function suite() {
-    this.timeout(80000);
+    this.timeout(45000);
 
     let writeSdk;
     let contractId;
@@ -625,7 +625,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           this.skip('MASTER_KEY_WIF not set');
           return;
         }
-        this.timeout(120000);
+        this.timeout(10000);
 
         // Generate a unique keypair for the new identity key
         const keyPair = await wallet.generateKeyPair('testnet');
@@ -690,7 +690,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
           this.skip('MASTER_KEY_WIF not set');
           return;
         }
-        this.timeout(120000);
+        this.timeout(10000);
 
         await updateIdentity(
           writeSdk,
