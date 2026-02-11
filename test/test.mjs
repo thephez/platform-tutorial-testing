@@ -33,6 +33,7 @@ import {
   retrieveIdentityBalance,
   retrieveIdentityKeys,
   checkNameAvailability,
+  retrieveContractHistory,
   getEpochInfo,
   getCurrentEpoch,
   getTokenInfo,
@@ -43,6 +44,7 @@ import {
   IDENTITY_ID,
   IDENTITY_NAME,
   CORE_WITHDRAWAL_ADDRESS,
+  HISTORY_CONTRACT_ID,
   TOKEN_ID,
   TOKEN_HOLDER_ID,
 } from '../tutorials/constants.mjs';
@@ -238,6 +240,25 @@ describe(`EVO SDK Tutorial Tests (${new Date().toLocaleTimeString()})`, function
       expect(json).to.have.property('config');
       expect(json).to.have.property('documentSchemas');
       expect(json).to.have.property('version').that.is.a('number');
+    });
+
+    it(`retrieveContractHistory - should fetch contract history (${HISTORY_CONTRACT_ID})`, async function () {
+      if (!HISTORY_CONTRACT_ID) {
+        this.skip('HISTORY_CONTRACT_ID not configured');
+        return;
+      }
+      const result = await retrieveContractHistory(sdk, HISTORY_CONTRACT_ID);
+      expect(result).to.be.instanceOf(Map);
+      expect(result.size).to.be.greaterThan(0);
+      const [timestamp, contract] = result.entries().next().value;
+      expect(typeof timestamp).to.equal('bigint');
+      expect(timestamp > 0n).to.be.true;
+      expect(contract).to.be.an.instanceOf(DataContract);
+      const json = contract.toJSON();
+      expect(json).to.have.property('id', HISTORY_CONTRACT_ID);
+      expect(json).to.have.property('version').that.is.a('number');
+      expect(json).to.have.property('documentSchemas').that.is.an('object');
+      this.test.title += ` | ${result.size} version(s)`;
     });
   });
 

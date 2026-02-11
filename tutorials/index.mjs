@@ -20,6 +20,7 @@ export { deleteDocument } from './document/deleteDocument.mjs';
 export { retrieveIdentityBalance } from './identity/retrieveIdentityBalance.mjs';
 export { retrieveIdentityKeys } from './identity/retrieveIdentityKeys.mjs';
 export { checkNameAvailability } from './name/checkNameAvailability.mjs';
+export { retrieveContractHistory } from './contract/retrieveContractHistory.mjs';
 export { getEpochInfo } from './epoch/getEpochInfo.mjs';
 export { getCurrentEpoch } from './epoch/getCurrentEpoch.mjs';
 export { getTokenInfo } from './tokens/getTokenInfo.mjs';
