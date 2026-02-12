@@ -1,36 +1,28 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
 async function deleteDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   dataContractId,
   documentTypeName,
   documentId,
 ) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Delete the document from the platform
   await sdk.documents.delete({
     document: {
       id: documentId,
-      ownerId: identityId,
+      ownerId: identity.id,
       dataContractId,
       documentTypeName,
     },
@@ -41,9 +33,7 @@ async function deleteDocument(
 
 /* deleteDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   'your contract id here',
   'note',
   'document id to delete here',

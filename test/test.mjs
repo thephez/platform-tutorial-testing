@@ -521,9 +521,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
         const doc = await updateDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           createdDocumentId,
@@ -536,7 +534,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(doc.revision > 1n).to.be.true;
         this.test.title += ` (${createdDocumentId} v${Number(doc.revision)})`;
         expect(doc.documentTypeName).to.equal('note');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.ownerId.toString()).to.equal(keyManager.identityId);
         expect(doc.dataContractId.toString()).to.equal(contractId);
 
         const json = doc.toJSON();
@@ -552,9 +550,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
         const result = await deleteDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           createdDocumentId,

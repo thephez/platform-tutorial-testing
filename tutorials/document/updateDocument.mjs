@@ -1,32 +1,26 @@
-/* import { EvoSDK, IdentitySigner, Document } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
-import { IdentitySigner, Document } from '@dashevo/evo-sdk';
+import { Document } from '@dashevo/evo-sdk';
 
 async function updateDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   dataContractId,
   documentTypeName,
   documentId,
   newRevision,
   documentData,
 ) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Create the replacement document with incremented revision
   const document = new Document(
@@ -34,7 +28,7 @@ async function updateDocument(
     documentTypeName,
     BigInt(newRevision),
     dataContractId,
-    identityId,
+    identity.id,
     documentId,
   );
 
@@ -50,9 +44,7 @@ async function updateDocument(
 
 /* updateDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   'your contract id here',
   'note',
   'existing document id here',
