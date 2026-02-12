@@ -9,12 +9,7 @@ const keyManager = await IdentityKeyManager.create({
   mnemonic: 'your twelve word mnemonic here',
 }); */
 
-async function transferCredits(
-  sdk,
-  keyManager,
-  recipientId,
-  amount,
-) {
+async function transferCredits(sdk, keyManager, recipientId, amount) {
   const { identity, signer } = await keyManager.getTransfer();
 
   // Transfer credits to the recipient identity

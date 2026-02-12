@@ -9,11 +9,7 @@ const keyManager = await IdentityKeyManager.create({
   mnemonic: 'your twelve word mnemonic here',
 }); */
 
-async function registerName(
-  sdk,
-  keyManager,
-  label,
-) {
+async function registerName(sdk, keyManager, label) {
   const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Register a DPNS name for the identity.

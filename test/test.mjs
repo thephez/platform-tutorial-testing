@@ -542,12 +542,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
     describe('Name tutorials', function () {
       it('registerName - should register a DPNS name', async function () {
         const label = `ready-player-${Date.now()}`;
-        const normalizedLabel = await writeSdk.dpns.convertToHomographSafe(label);
-        const result = await registerName(
-          writeSdk,
-          keyManager,
+        const normalizedLabel = await writeSdk.dpns.convertToHomographSafe(
           label,
         );
+        const result = await registerName(writeSdk, keyManager, label);
         expect(result).to.be.an.instanceOf(RegisterDpnsNameResult);
         expect(result.fullDomainName).to.equal(`${normalizedLabel}.dash`);
         this.test.title += ` (${label}.dash)`;
