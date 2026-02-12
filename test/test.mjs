@@ -304,13 +304,10 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
   });
 });
 
-// Write tutorial tests — require IDENTITY_ID, PRIVATE_KEY_WIF env vars
-const writeIdentityId = process.env.IDENTITY_ID;
-const writePrivateKeyWif = process.env.PRIVATE_KEY_WIF;
+// Write tutorial tests — require PLATFORM_MNEMONIC env var
 const writeMnemonic = process.env.PLATFORM_MNEMONIC;
-const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
-(hasWriteCredentials ? describe : describe.skip)(
+(writeMnemonic ? describe : describe.skip)(
   `EVO SDK Tutorial Tests (read-write) (${new Date().toLocaleTimeString()})`,
   function suite() {
     this.timeout(45000);
@@ -321,14 +318,11 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
     before(async function () {
       writeSdk = await createClient(network);
-      if (writeMnemonic) {
-        keyManager = await IdentityKeyManager.create({
-          sdk: writeSdk,
-          // identityId: process.env.PLATFORM_MNEMONIC_IDENTITY_ID, //writeIdentityId,
-          mnemonic: writeMnemonic,
-          network,
-        });
-      }
+      keyManager = await IdentityKeyManager.create({
+        sdk: writeSdk,
+        mnemonic: writeMnemonic,
+        network,
+      });
     });
 
     describe('Contract write tutorials', function () {
