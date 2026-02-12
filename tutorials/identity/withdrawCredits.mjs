@@ -1,27 +1,22 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here'; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
 async function withdrawCredits(
   sdk,
-  identityId,
-  privateKeyWif,
+  keyManager,
   amount,
   toAddress,
   coreFeePerByte,
 ) {
-  // Fetch the identity
-  const identity = await sdk.identities.fetch(identityId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, signer } = await keyManager.getTransfer();
 
   // Withdraw credits from the identity to a Dash address
   return sdk.identities.creditWithdrawal({
@@ -35,8 +30,7 @@ async function withdrawCredits(
 
 /* withdrawCredits(
   sdk,
-  identityId,
-  privateKeyWif,
+  keyManager,
   1000000,
   'yNPbcFfabtNmmxKdGwhHomdYfVs6gikbPf',
 )

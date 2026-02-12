@@ -1,28 +1,20 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
 async function registerName(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   label,
 ) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Register a DPNS name for the identity.
   // The label is the name without the '.dash' suffix (e.g., 'alice').
@@ -34,7 +26,7 @@ async function registerName(
   });
 }
 
-/* registerName(sdk, identityId, privateKeyWif, identityPublicKeyId, 'your-name-here')
+/* registerName(sdk, keyManager, 'your-name-here')
   .then((d) => console.log('Name registered:\n', d))
   .catch((e) => console.error('Something went wrong:\n', e)); */
 
