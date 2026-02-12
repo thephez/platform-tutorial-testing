@@ -32,6 +32,7 @@ import {
   updateDocument,
   deleteDocument,
   retrieveIdentityBalance,
+  retrieveIdentityIds,
   retrieveIdentityKeys,
   checkNameAvailability,
   retrieveContractHistory,
@@ -147,6 +148,18 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
         expect(json).to.have.property('securityLevel');
         expect(json).to.have.property('type');
       });
+    });
+
+    it('retrieveIdentityIds - should find identity IDs for a mnemonic', async function () {
+      const mnemonic = process.env.PLATFORM_MNEMONIC;
+      if (!mnemonic) {
+        this.skip('requires PLATFORM_MNEMONIC');
+        return;
+      }
+      const result = await retrieveIdentityIds(sdk, mnemonic, network);
+      expect(result).to.be.an('array').with.length.greaterThan(0);
+      result.forEach((id) => expect(id).to.be.a('string'));
+      this.test.title += ` | found ${result.length}: ${result.join(', ')}`;
     });
   });
 

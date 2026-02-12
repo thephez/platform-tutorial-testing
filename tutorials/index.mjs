@@ -19,6 +19,7 @@ export { submitDocument } from './document/submitDocument.mjs';
 export { updateDocument } from './document/updateDocument.mjs';
 export { deleteDocument } from './document/deleteDocument.mjs';
 export { retrieveIdentityBalance } from './identity/retrieveIdentityBalance.mjs';
+export { retrieveIdentityIds } from './identity/retrieveIdentityIds.mjs';
 export { retrieveIdentityKeys } from './identity/retrieveIdentityKeys.mjs';
 export { checkNameAvailability } from './name/checkNameAvailability.mjs';
 export { retrieveContractHistory } from './contract/retrieveContractHistory.mjs';
