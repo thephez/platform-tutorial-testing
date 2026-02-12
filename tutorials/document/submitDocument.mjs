@@ -1,30 +1,25 @@
-/* import { EvoSDK, IdentitySigner, Document } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  identityId: 'your identity id here',
+  mnemonic: 'your mnemonic here',
+}); */
 
-import { IdentitySigner, Document } from '@dashevo/evo-sdk';
+import { Document } from '@dashevo/evo-sdk';
 
 async function submitDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   dataContractId,
   documentTypeName,
   documentData,
 ) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Create a new document (revision 1, ID auto-generated)
   const document = new Document(
@@ -32,7 +27,7 @@ async function submitDocument(
     documentTypeName,
     BigInt(1),
     dataContractId,
-    identityId,
+    identity.id,
     undefined,
   );
 
@@ -48,9 +43,7 @@ async function submitDocument(
 
 /* submitDocument(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   'your contract id here',
   'note',
   { message: 'Tutorial Test @ ' + new Date().toUTCString() },

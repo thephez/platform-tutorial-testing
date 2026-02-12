@@ -11,6 +11,7 @@ import {
   wallet,
 } from '@dashevo/evo-sdk';
 import {
+  IdentityKeyManager,
   createClient,
   checkNetworkConnection,
   getSystemInfo,
@@ -309,6 +310,7 @@ const writePrivateKeyWif = process.env.PRIVATE_KEY_WIF;
 const writeKeyId = Number(process.env.IDENTITY_PUBLIC_KEY_ID || 1);
 const transferKeyWif = process.env.TRANSFER_KEY_WIF;
 const masterKeyWif = process.env.MASTER_KEY_WIF;
+const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
 (hasWriteCredentials ? describe : describe.skip)(
@@ -317,10 +319,19 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
     this.timeout(45000);
 
     let writeSdk;
+    let keyManager;
     let contractId;
 
     before(async function () {
       writeSdk = await createClient(network);
+      if (writeMnemonic) {
+        keyManager = await IdentityKeyManager.create({
+          sdk: writeSdk,
+          // identityId: process.env.PLATFORM_MNEMONIC_IDENTITY_ID, //writeIdentityId,
+          mnemonic: writeMnemonic,
+          network,
+        });
+      }
     });
 
     describe('Contract write tutorials', function () {
@@ -476,11 +487,12 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(contractId, 'registerContract must succeed first').to.be.a(
           'string',
         );
+        expect(keyManager, 'keyManager requires PLATFORM_WALLET_MNEMONIC').to.be.an(
+          'object',
+        );
         const doc = await submitDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           { message: `Test @ ${new Date().toUTCString()}` },
@@ -492,7 +504,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(createdDocumentId).to.be.a('string').with.length.greaterThan(0);
         expect(doc.revision).to.equal(1n);
         expect(doc.documentTypeName).to.equal('note');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.ownerId.toString()).to.equal(keyManager.identityId);
         expect(doc.dataContractId.toString()).to.equal(contractId);
 
         // User data is accessible via toJSON

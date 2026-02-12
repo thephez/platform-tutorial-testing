@@ -63,6 +63,44 @@ describe('IdentityKeyManager', function suite() {
       expect(km.keys.encryption.privateKeyWif).to.equal(rawKeys[4].privateKeyWif);
     });
 
+    it('should auto-resolve identityId from mnemonic when not provided', async function () {
+      if (!process.env.PLATFORM_MNEMONIC) {
+        this.skip('PLATFORM_MNEMONIC not set');
+      }
+      const km = await IdentityKeyManager.create({
+        sdk,
+        mnemonic: process.env.PLATFORM_MNEMONIC,
+        network,
+      });
+      expect(km.identityId).to.be.a('string').with.length.greaterThan(0);
+      this.test.title += ` (${km.identityId})`;
+
+      const { identity, identityKey, signer } = await km.getAuth();
+      expect(identity).to.be.an.instanceOf(Identity);
+      expect(identityKey).to.be.an('object');
+      expect(signer).to.be.an.instanceOf(IdentitySigner);
+    });
+
+    it('should match explicit identityId when auto-resolved', async function () {
+      if (!process.env.PLATFORM_MNEMONIC) {
+        this.skip('PLATFORM_MNEMONIC not set');
+      }
+      const auto = await IdentityKeyManager.create({
+        sdk,
+        mnemonic: process.env.PLATFORM_MNEMONIC,
+        network,
+      });
+      const explicit = await IdentityKeyManager.create({
+        sdk,
+        identityId: auto.identityId,
+        mnemonic: process.env.PLATFORM_MNEMONIC,
+        network,
+      });
+      expect(auto.identityId).to.equal(explicit.identityId);
+      expect(auto.keys.master.privateKeyWif).to.equal(explicit.keys.master.privateKeyWif);
+      expect(auto.keys.auth.privateKeyWif).to.equal(explicit.keys.auth.privateKeyWif);
+    });
+
     it('should be deterministic (same inputs = same keys)', async function () {
       const km1 = await IdentityKeyManager.create({
         sdk,

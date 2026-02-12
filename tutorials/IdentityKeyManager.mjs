@@ -12,7 +12,7 @@ const keyManager = await IdentityKeyManager.create({
   identityIndex: 0,
 }); */
 
-import { IdentitySigner, wallet } from '@dashevo/evo-sdk';
+import { IdentitySigner, PrivateKey, wallet } from '@dashevo/evo-sdk';
 
 /**
  * Manages identity keys and signing for write operations.
@@ -24,10 +24,10 @@ import { IdentitySigner, wallet } from '@dashevo/evo-sdk';
  * Keys are derived from a BIP39 mnemonic using standard DIP-9 paths
  * (compatible with dash-evo-tool / Dash wallets):
  *   Key 0 = MASTER (identity updates)
- *   Key 1 = CRITICAL auth (contracts, documents, names)
- *   Key 2 = HIGH auth (documents, names)
+ *   Key 1 = HIGH auth (documents, names)
+ *   Key 2 = CRITICAL auth (contracts, documents, names)
  *   Key 3 = TRANSFER (credit transfers/withdrawals)
- *   Key 4 = ENCRYPTION HIGH (encrypted messaging/data)
+ *   Key 4 = ENCRYPTION MEDIUM (encrypted messaging/data)
  */
 class IdentityKeyManager {
   constructor(sdk, identityId, keys) {
@@ -43,6 +43,14 @@ class IdentityKeyManager {
   /**
    * Create an IdentityKeyManager from a BIP39 mnemonic.
    * Derives all standard identity keys using DIP-9 paths.
+   *
+   * @param {object} opts
+   * @param {object} opts.sdk - Connected EvoSDK instance
+   * @param {string} [opts.identityId] - Identity ID. If omitted, auto-resolved
+   *   from the mnemonic by looking up the master key's public key hash on-chain.
+   * @param {string} opts.mnemonic - BIP39 mnemonic
+   * @param {string} [opts.network='testnet'] - 'testnet' or 'mainnet'
+   * @param {number} [opts.identityIndex=0] - Which identity derived from this mnemonic
    */
   static async create({
     sdk,
@@ -54,23 +62,36 @@ class IdentityKeyManager {
     const coin = network === 'testnet' ? 1 : 5;
     const derive = (keyIndex) => wallet.deriveKeyFromSeedWithPath({
       mnemonic,
-      path: `m/9'/${coin}'/5'/0'/${identityIndex}'/${keyIndex}'`,
+      path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
       network,
     });
 
-    const [masterKey, authKey, authHighKey, transferKey, encryptionKey] =
+    const [masterKey, authHighKey, authKey, transferKey, encryptionKey] =
       await Promise.all([
         derive(0), // MASTER
-        derive(1), // CRITICAL auth
-        derive(2), // HIGH auth
+        derive(1), // HIGH auth
+        derive(2), // CRITICAL auth
         derive(3), // TRANSFER
-        derive(4), // ENCRYPTION HIGH
+        derive(4), // ENCRYPTION MEDIUM
       ]);
 
-    return new IdentityKeyManager(sdk, identityId, {
+    let resolvedId = identityId;
+    if (!resolvedId) {
+      const privateKey = PrivateKey.fromWIF(masterKey.toObject().privateKeyWif);
+      const pubKeyHash = privateKey.getPublicKeyHash();
+      const identity = await sdk.identities.byPublicKeyHash(pubKeyHash);
+      if (!identity) {
+        throw new Error(
+          'No identity found for the given mnemonic (key 0 public key hash)',
+        );
+      }
+      resolvedId = identity.id.toString();
+    }
+
+    return new IdentityKeyManager(sdk, resolvedId, {
       master: { keyId: 0, privateKeyWif: masterKey.toObject().privateKeyWif },
-      auth: { keyId: 1, privateKeyWif: authKey.toObject().privateKeyWif },
-      authHigh: { keyId: 2, privateKeyWif: authHighKey.toObject().privateKeyWif },
+      authHigh: { keyId: 1, privateKeyWif: authHighKey.toObject().privateKeyWif },
+      auth: { keyId: 2, privateKeyWif: authKey.toObject().privateKeyWif },
       transfer: { keyId: 3, privateKeyWif: transferKey.toObject().privateKeyWif },
       encryption: { keyId: 4, privateKeyWif: encryptionKey.toObject().privateKeyWif },
     });
@@ -90,16 +111,16 @@ class IdentityKeyManager {
     return { identity, identityKey, signer };
   }
 
-  /** CRITICAL auth — contracts, documents, names. */
+  /** CRITICAL auth (key 2) — contracts, documents, names. */
   async getAuth() { return this.getSigner('auth'); }
 
-  /** HIGH auth — documents, names (alternative). */
+  /** HIGH auth (key 1) — documents, names. */
   async getAuthHigh() { return this.getSigner('authHigh'); }
 
   /** TRANSFER — credit transfers, withdrawals. */
   async getTransfer() { return this.getSigner('transfer'); }
 
-  /** ENCRYPTION HIGH — encrypted messaging/data. */
+  /** ENCRYPTION MEDIUM — encrypted messaging/data. */
   async getEncryption() { return this.getSigner('encryption'); }
 
   /**
