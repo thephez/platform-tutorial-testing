@@ -1,9 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const label = 'your-name-here'; */
+const { sdk } = await setupDashClient(); */
 
 async function checkNameAvailability(sdk, label) {
   return sdk.dpns.isNameAvailable(label);

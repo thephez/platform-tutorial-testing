@@ -1,7 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect(); */
+const { sdk } = await setupDashClient(); */
 
 async function retrieveNameByName(sdk, name) {
   // Resolve a DPNS name to its identity ID

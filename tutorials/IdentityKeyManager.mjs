@@ -1,16 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
-import { IdentityKeyManager } from './IdentityKeyManager.mjs';
+/* import { setupDashClient } from './sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const keyManager = await IdentityKeyManager.create({
-  sdk,
-  identityId: 'your identity id here',
-  mnemonic: 'your twelve word mnemonic here',
-  network: 'testnet',
-  identityIndex: 0,
-}); */
+const { sdk, keyManager } = await setupDashClient(); */
 
 import { IdentitySigner, PrivateKey, wallet } from '@dashevo/evo-sdk';
 

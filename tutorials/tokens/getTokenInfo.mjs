@@ -1,9 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const tokenId = 'your token id here'; */
+const { sdk } = await setupDashClient(); */
 
 async function getTokenInfo(sdk, tokenId) {
   const totalSupply = await sdk.tokens.totalSupply(tokenId);

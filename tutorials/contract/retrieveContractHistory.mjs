@@ -1,9 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const contractId = 'your contract id here'; */
+const { sdk } = await setupDashClient(); */
 
 async function retrieveContractHistory(sdk, contractId) {
   return sdk.contracts.getHistory({ dataContractId: contractId });

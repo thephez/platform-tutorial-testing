@@ -11,8 +11,8 @@ import {
   wallet,
 } from '@dashevo/evo-sdk';
 import {
-  IdentityKeyManager,
   createClient,
+  setupDashClient,
   checkNetworkConnection,
   getSystemInfo,
   retrieveIdentity,
@@ -317,12 +317,7 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
     let contractId;
 
     before(async function () {
-      writeSdk = await createClient(network);
-      keyManager = await IdentityKeyManager.create({
-        sdk: writeSdk,
-        mnemonic: writeMnemonic,
-        network,
-      });
+      ({ sdk: writeSdk, keyManager } = await setupDashClient());
     });
 
     describe('Contract write tutorials', function () {

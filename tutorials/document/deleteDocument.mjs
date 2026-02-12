@@ -1,13 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
-import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
-
-const keyManager = await IdentityKeyManager.create({
-  sdk,
-  mnemonic: 'your twelve word mnemonic here',
-}); */
+const { sdk, keyManager } = await setupDashClient(); */
 
 async function deleteDocument(
   sdk,

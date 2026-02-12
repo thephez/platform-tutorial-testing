@@ -1,7 +1,6 @@
-/* import { EvoSDK } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect(); */
+const { sdk } = await setupDashClient(); */
 
 async function retrieveNameByRecord(sdk, identityId) {
   // Retrieve usernames registered to an identity

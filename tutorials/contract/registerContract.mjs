@@ -1,38 +1,25 @@
-/* import { EvoSDK, IdentitySigner, DataContract } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
+const { sdk, keyManager } = await setupDashClient(); */
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
-
-import { IdentitySigner, DataContract } from '@dashevo/evo-sdk';
+import { DataContract } from '@dashevo/evo-sdk';
 
 async function registerContract(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   documentSchemas,
   definitions,
   tokens,
 ) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+  const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Get the next identity nonce for contract creation
-  const identityNonce = await sdk.identities.nonce(identityId);
+  const identityNonce = await sdk.identities.nonce(identity.id.toString());
   const nextNonce = (identityNonce || 0n) + 1n;
 
   // Create the data contract
   const dataContract = new DataContract(
-    identityId,
+    identity.id,
     nextNonce,
     documentSchemas,
     definitions, // optional: reusable $ref definitions
@@ -63,9 +50,7 @@ async function registerContract(
 
 registerContract(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   documentSchemas,
 )
   .then((d) => console.log('Contract registered:\n', d))

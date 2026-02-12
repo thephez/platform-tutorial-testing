@@ -1,29 +1,9 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const sdk = EvoSDK.testnetTrusted();
-await sdk.connect();
+const { sdk, keyManager } = await setupDashClient(); */
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here';
-const identityPublicKeyId = 1; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
-
-async function updateContract(
-  sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
-  contractId,
-  newDocumentSchemas,
-) {
-  // Fetch the identity and get the signing key by ID
-  const identity = await sdk.identities.fetch(identityId);
-  const identityKey = identity.getPublicKeyById(identityPublicKeyId);
-
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+async function updateContract(sdk, keyManager, contractId, newDocumentSchemas) {
+  const { identityKey, signer } = await keyManager.getAuth();
 
   // Fetch the existing contract
   const existingContract = await sdk.contracts.fetch(contractId);
@@ -59,9 +39,7 @@ async function updateContract(
 
 updateContract(
   sdk,
-  identityId,
-  privateKeyWif,
-  identityPublicKeyId,
+  keyManager,
   'your contract id here',
   newDocumentSchemas,
 )
