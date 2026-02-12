@@ -748,9 +748,30 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         this.test.title += ` | identity balance: ${result.newBalance}`;
       });
 
-      it.skip('addressWithdraw - requires sufficient balance + L1 wait time', async function () {
-        // Withdrawal to L1 involves confirmation delays and requires
-        // a CoreScript output + sufficient balance. Skipped by default.
+      it(`addressWithdraw - should withdraw to L1 address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
+        this.timeout(60000);
+        // const addrInfo = await getAddressInfo(writeSdk, addressKeyManager.primaryAddress.bech32m);
+        // const balCredits = addrInfo.balance;
+        // const balDash = Number(balCredits) / 100000000000;
+        // console.log(`        Address balance: ${balCredits} credits (${balDash} Dash)`);
+
+        const withdrawAmount = 1000000n;
+
+        // Decode base58check address to 20-byte hash160 for CoreScript.newP2PKH
+        const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        const num = CORE_WITHDRAWAL_ADDRESS.split('')
+          .reduce((acc, ch) => acc * 58n + BigInt(ALPHABET.indexOf(ch)), 0n);
+        const hex = num.toString(16).padStart(50, '0'); // 25 bytes = 50 hex chars
+        const coreAddressHash = Uint8Array.from(Buffer.from(hex, 'hex')).subarray(1, 21);
+
+        const result = await addressWithdraw(
+          writeSdk,
+          addressKeyManager,
+          coreAddressHash,
+          withdrawAmount,
+        );
+        expect(result).to.be.instanceOf(Map);
+        this.test.title += ` | result keys: ${[...result.keys()].length}`;
       });
 
       // Blocked by SDK nonce off-by-one bug: https://github.com/dashpay/platform/issues/3083
