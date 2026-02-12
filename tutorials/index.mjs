@@ -31,3 +31,8 @@ export { AddressKeyManager } from './AddressKeyManager.mjs';
 export { derivePlatformAddress } from './address/derivePlatformAddress.mjs';
 export { getAddressInfo } from './address/getAddressInfo.mjs';
 export { getAddressesInfo } from './address/getAddressesInfo.mjs';
+export { transferFromIdentity as transferToAddress } from './address/transferFromIdentity.mjs';
+export { addressTransfer } from './address/addressTransfer.mjs';
+export { topUpIdentityFromAddress } from './address/topUpIdentityFromAddress.mjs';
+export { addressWithdraw } from './address/addressWithdraw.mjs';
+export { createIdentityFromAddresses } from './address/createIdentityFromAddresses.mjs';

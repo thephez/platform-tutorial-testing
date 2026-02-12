@@ -7,6 +7,8 @@ import {
   Identity,
   IdentityCreditTransferResult,
   IdentityPublicKeyInCreation,
+  PlatformAddress,
+  PlatformAddressInfo,
   RegisterDpnsNameResult,
   wallet,
 } from '@dashevo/evo-sdk';
@@ -40,6 +42,15 @@ import {
   getCurrentEpoch,
   getTokenInfo,
   getTokenBalances,
+  AddressKeyManager,
+  derivePlatformAddress,
+  getAddressInfo,
+  getAddressesInfo,
+  transferToAddress,
+  addressTransfer,
+  topUpIdentityFromAddress,
+  addressWithdraw,
+  createIdentityFromAddresses,
 } from '../tutorials/index.mjs';
 import {
   DPNS_CONTRACT_ID,
@@ -620,6 +631,131 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         expect(result.domainDocumentId.toString())
           .to.be.a('string')
           .with.length.greaterThan(0);
+      });
+    });
+
+    describe('Platform Address write tutorials', function () {
+      let addressKeyManager;
+      const startingBalances = {};
+
+      before(async function () {
+        addressKeyManager = await AddressKeyManager.create({
+          sdk: writeSdk,
+          mnemonic: writeMnemonic,
+          network,
+          count: 2,
+        });
+
+        // Capture starting balances
+        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        const addrInfos = await getAddressesInfo(writeSdk, addrList);
+        addrList.forEach((addr, i) => {
+          const info = Array.from(addrInfos.values())[i];
+          startingBalances[addr] = info?.balance ?? 0n;
+        });
+        startingBalances.identity = await retrieveIdentityBalance(writeSdk, keyManager.identityId);
+      });
+
+      after(async function () {
+        if (!addressKeyManager) return;
+        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        const addrInfos = await getAddressesInfo(writeSdk, addrList);
+        const endIdentityBalance = await retrieveIdentityBalance(writeSdk, keyManager.identityId);
+
+        console.log('\n\t--- Platform Address Summary ---');
+        addrList.forEach((addr, i) => {
+          const start = startingBalances[addr] ?? 0n;
+          const info = Array.from(addrInfos.values())[i];
+          const end = info?.balance ?? 0n;
+          const diff = end - start;
+          const sign = diff > 0n ? '+' : '';
+          console.log(`\t  [${i}] ${addr}`);
+          console.log(`\t       start: ${start}  end: ${end}  diff: ${sign}${diff}`);
+        });
+        const idStart = startingBalances.identity ?? 0n;
+        const idDiff = endIdentityBalance - idStart;
+        const idSign = idDiff > 0n ? '+' : '';
+        console.log(`\t  Identity (${keyManager.identityId})`);
+        console.log(`\t       start: ${idStart}  end: ${endIdentityBalance}  diff: ${idSign}${idDiff}`);
+        console.log('\t--- End Summary ---\n');
+      });
+
+      it('transferToAddress - should fund platform address from identity', async function () {
+        const recipientAddress = addressKeyManager.primaryAddress.bech32m;
+        this.test.title += ` | from identity: ${keyManager.identityId} -> addr: ${recipientAddress}`;
+        const result = await transferToAddress(
+          writeSdk,
+          keyManager,
+          recipientAddress,
+          10000000,
+        );
+        expect(typeof result.newBalance).to.equal('bigint');
+        expect(result.newBalance > 0n).to.be.true;
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | identity balance: ${result.newBalance}`;
+      });
+
+      it('getAddressInfo - should show funded address', async function () {
+        this.test.title += ` | addr: ${addressKeyManager.primaryAddress.bech32m}`;
+        const result = await getAddressInfo(
+          writeSdk,
+          addressKeyManager.primaryAddress.bech32m,
+        );
+        expect(result).to.be.an.instanceOf(PlatformAddressInfo);
+        expect(result.address).to.be.an.instanceOf(PlatformAddress);
+        expect(typeof result.nonce).to.equal('bigint');
+        expect(typeof result.balance).to.equal('bigint');
+        expect(result.balance > 0n).to.be.true;
+        this.test.title += ` | balance: ${result.balance}, nonce: ${Number(result.nonce)}`;
+      });
+
+      it('addressTransfer - should transfer between platform addresses', async function () {
+        const fromAddr = addressKeyManager.primaryAddress.bech32m;
+        const toAddr = addressKeyManager.addresses[1].bech32m;
+        this.test.title += ` | from: ${fromAddr} -> to: ${toAddr}`;
+        // Self-transfer: net cost is fees only
+        const result = await addressTransfer(
+          writeSdk,
+          addressKeyManager,
+          toAddr,
+          1000000,
+        );
+        expect(result).to.be.instanceOf(Map);
+        expect(result.size).to.be.greaterThan(0);
+        const entries = Array.from(result.entries());
+        entries.forEach(([addr, info]) => {
+          expect(addr).to.be.an.instanceOf(PlatformAddress);
+          expect(info).to.be.an.instanceOf(PlatformAddressInfo);
+          expect(typeof info.balance).to.equal('bigint');
+        });
+        this.test.title += ` | ${entries.length} address(es) updated`;
+      });
+
+      it('topUpIdentityFromAddress - should top up identity from address', async function () {
+        this.test.title += ` | from addr: ${addressKeyManager.primaryAddress.bech32m} -> identity: ${keyManager.identityId}`;
+        const identity = await writeSdk.identities.fetch(
+          keyManager.identityId,
+        );
+        const result = await topUpIdentityFromAddress(
+          writeSdk,
+          addressKeyManager,
+          identity,
+          1000000,
+        );
+        expect(typeof result.newBalance).to.equal('bigint');
+        expect(result.newBalance > 0n).to.be.true;
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | identity balance: ${result.newBalance}`;
+      });
+
+      it.skip('addressWithdraw - requires sufficient balance + L1 wait time', async function () {
+        // Withdrawal to L1 involves confirmation delays and requires
+        // a CoreScript output + sufficient balance. Skipped by default.
+      });
+
+      it.skip('createIdentityFromAddresses - creates permanent on-chain state', async function () {
+        // Identity creation from addresses is expensive and creates
+        // permanent on-chain state. Skipped by default.
       });
     });
 
