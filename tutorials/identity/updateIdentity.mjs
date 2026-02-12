@@ -1,33 +1,24 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here'; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
+const keyManager = await IdentityKeyManager.create({
+  sdk,
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
 async function updateIdentity(
   sdk,
-  identityId,
-  privateKeyWif,
+  keyManager,
   addPublicKeys,
   disablePublicKeys,
   additionalKeyWifs,
 ) {
-  // Fetch the identity
-  const identity = await sdk.identities.fetch(identityId);
-
-  // Create the signer with the master key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
-
-  // When adding new keys, each key must prove ownership by signing
-  // with its own private key — add those WIFs to the signer too
-  if (additionalKeyWifs) {
-    additionalKeyWifs.forEach((wif) => signer.addKeyFromWif(wif));
-  }
+  // getMaster() fetches the identity, gets the master key (key 0),
+  // creates a signer, and adds any additional WIFs for new keys
+  const { identity, signer } = await keyManager.getMaster(additionalKeyWifs);
 
   // Update the identity on the platform.
   // addPublicKeys: array of public key objects to add
@@ -44,11 +35,9 @@ async function updateIdentity(
 
 /* updateIdentity(
   sdk,
-  identityId,
-  privateKeyWif,
+  keyManager,
   undefined,          // no keys to add
   [1],                // disable public key ID 1
-  undefined,          // no additional key WIFs needed for disable
 )
   .then((d) => console.log('Identity updated:\n', d))
   .catch((e) => console.error('Something went wrong:\n', e)); */

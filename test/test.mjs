@@ -11,6 +11,7 @@ import {
   wallet,
 } from '@dashevo/evo-sdk';
 import {
+  IdentityKeyManager,
   createClient,
   checkNetworkConnection,
   getSystemInfo,
@@ -303,33 +304,32 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
   });
 });
 
-// Write tutorial tests — require IDENTITY_ID, PRIVATE_KEY_WIF env vars
-const writeIdentityId = process.env.IDENTITY_ID;
-const writePrivateKeyWif = process.env.PRIVATE_KEY_WIF;
-const writeKeyId = Number(process.env.IDENTITY_PUBLIC_KEY_ID || 1);
-const transferKeyWif = process.env.TRANSFER_KEY_WIF;
-const masterKeyWif = process.env.MASTER_KEY_WIF;
-const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
+// Write tutorial tests — require PLATFORM_MNEMONIC env var
+const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
-(hasWriteCredentials ? describe : describe.skip)(
+(writeMnemonic ? describe : describe.skip)(
   `EVO SDK Tutorial Tests (read-write) (${new Date().toLocaleTimeString()})`,
   function suite() {
     this.timeout(45000);
 
     let writeSdk;
+    let keyManager;
     let contractId;
 
     before(async function () {
       writeSdk = await createClient(network);
+      keyManager = await IdentityKeyManager.create({
+        sdk: writeSdk,
+        mnemonic: writeMnemonic,
+        network,
+      });
     });
 
     describe('Contract write tutorials', function () {
       it('registerContract - should publish a new contract', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractMinimal,
         );
         expect(contract).to.be.an.instanceOf(DataContract);
@@ -338,7 +338,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         this.test.title += ` (${contractId})`;
         expect(contractId).to.be.a('string').with.length.greaterThan(0);
         expect(contract.version).to.equal(1);
-        expect(contract.ownerId.toString()).to.equal(writeIdentityId);
+        expect(contract.ownerId.toString()).to.equal(keyManager.identityId);
 
         // Config and schemas are only available via toJSON
         const json = contract.toJSON();
@@ -368,9 +368,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         };
         const updated = await updateContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           newSchemas,
         );
@@ -378,7 +376,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(updated.id.toString()).to.equal(contractId);
         expect(updated.version).to.be.greaterThan(1);
         this.test.title += ` (${contractId} v${updated.version})`;
-        expect(updated.ownerId.toString()).to.equal(writeIdentityId);
+        expect(updated.ownerId.toString()).to.equal(keyManager.identityId);
 
         // Merged schemas are only accessible via toJSON
         const json = updated.toJSON();
@@ -395,9 +393,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       it('should register a contract with indices', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractWithIndex,
         );
         expect(contract).to.be.an.instanceOf(DataContract);
@@ -409,9 +405,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       it('should register a contract with timestamps', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractWithTimestamps,
         );
         expect(contract).to.be.an.instanceOf(DataContract);
@@ -424,9 +418,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       it('should register a contract with binary data', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractWithBinaryData,
         );
         expect(contract).to.be.an.instanceOf(DataContract);
@@ -440,9 +432,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       it('should register an NFT contract', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractNft,
         );
         expect(contract).to.be.an.instanceOf(DataContract);
@@ -455,9 +445,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       it.skip('should register a token contract', async function () {
         const contract = await registerContract(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractTokenFile.documentSchemas,
           undefined,
           contractTokenFile.tokens,
@@ -476,11 +464,13 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(contractId, 'registerContract must succeed first').to.be.a(
           'string',
         );
+        expect(
+          keyManager,
+          'keyManager requires PLATFORM_WALLET_MNEMONIC',
+        ).to.be.an('object');
         const doc = await submitDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           { message: `Test @ ${new Date().toUTCString()}` },
@@ -492,7 +482,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(createdDocumentId).to.be.a('string').with.length.greaterThan(0);
         expect(doc.revision).to.equal(1n);
         expect(doc.documentTypeName).to.equal('note');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.ownerId.toString()).to.equal(keyManager.identityId);
         expect(doc.dataContractId.toString()).to.equal(contractId);
 
         // User data is accessible via toJSON
@@ -509,9 +499,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
         const doc = await updateDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           createdDocumentId,
@@ -524,7 +512,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(doc.revision > 1n).to.be.true;
         this.test.title += ` (${createdDocumentId} v${Number(doc.revision)})`;
         expect(doc.documentTypeName).to.equal('note');
-        expect(doc.ownerId.toString()).to.equal(writeIdentityId);
+        expect(doc.ownerId.toString()).to.equal(keyManager.identityId);
         expect(doc.dataContractId.toString()).to.equal(contractId);
 
         const json = doc.toJSON();
@@ -540,9 +528,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
         const result = await deleteDocument(
           writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+          keyManager,
           contractId,
           'note',
           createdDocumentId,
@@ -555,16 +541,14 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
     describe('Name tutorials', function () {
       it('registerName - should register a DPNS name', async function () {
-        const label = `tut0r1a1-test-${Date.now()}`;
-        const result = await registerName(
-          writeSdk,
-          writeIdentityId,
-          writePrivateKeyWif,
-          writeKeyId,
+        const label = `ready-player-${Date.now()}`;
+        const normalizedLabel = await writeSdk.dpns.convertToHomographSafe(
           label,
         );
+        const result = await registerName(writeSdk, keyManager, label);
         expect(result).to.be.an.instanceOf(RegisterDpnsNameResult);
-        expect(result.fullDomainName).to.equal(`${label}.dash`);
+        expect(result.fullDomainName).to.equal(`${normalizedLabel}.dash`);
+        this.test.title += ` (${label}.dash)`;
         expect(result.preorderDocumentId.toString())
           .to.be.a('string')
           .with.length.greaterThan(0);
@@ -578,16 +562,15 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       let newKeyId;
 
       it(`transferCredits - should transfer credits to another identity (${IDENTITY_ID})`, async function () {
-        if (!transferKeyWif) {
-          this.skip('TRANSFER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         // Transfer a small amount to a known testnet identity
         const recipientId = IDENTITY_ID;
         const result = await transferCredits(
           writeSdk,
-          writeIdentityId,
-          transferKeyWif,
+          keyManager,
           recipientId,
           100000,
         );
@@ -599,8 +582,8 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
 
       it(`withdrawCredits - should withdraw credits to a Dash address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
-        if (!transferKeyWif) {
-          this.skip('TRANSFER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         // Withdraw minimal amount to testnet wallet address
@@ -609,8 +592,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         const remainingBalance = await withdrawCredits(
           writeSdk,
-          writeIdentityId,
-          transferKeyWif,
+          keyManager,
           withdrawAmount,
           CORE_WITHDRAWAL_ADDRESS,
         );
@@ -621,8 +603,8 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
 
       it('updateIdentity - should add a new key to an identity', async function () {
-        if (!masterKeyWif) {
-          this.skip('MASTER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         this.timeout(10000);
@@ -635,7 +617,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
 
         // Fetch identity to determine next available key ID
-        const identity = await writeSdk.identities.fetch(writeIdentityId);
+        const identity = await writeSdk.identities.fetch(keyManager.identityId);
         const existingKeys = identity.toJSON().publicKeys;
         const maxKeyId = existingKeys.reduce(
           (max, k) => Math.max(max, k.id),
@@ -657,8 +639,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         const result = await updateIdentity(
           writeSdk,
-          writeIdentityId,
-          masterKeyWif,
+          keyManager,
           [newKey],
           undefined,
           [keyPair.privateKeyWif],
@@ -666,12 +647,12 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         expect(result).to.be.an.instanceOf(Identity);
         const resultJson = result.toJSON();
-        expect(resultJson).to.have.property('id', writeIdentityId);
+        expect(resultJson).to.have.property('id', keyManager.identityId);
         expect(resultJson).to.have.property('balance').that.is.a('number');
         expect(resultJson).to.have.property('publicKeys').that.is.an('array');
 
         // Re-fetch and verify key was added
-        const afterAdd = await writeSdk.identities.fetch(writeIdentityId);
+        const afterAdd = await writeSdk.identities.fetch(keyManager.identityId);
         const afterAddJson = afterAdd.toJSON();
         const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
         expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
@@ -686,22 +667,18 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
       it('updateIdentity - should disable a key on an identity', async function () {
         expect(newKeyId, 'add-key test must succeed first').to.be.a('number');
-        if (!masterKeyWif) {
-          this.skip('MASTER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         this.timeout(10000);
 
-        await updateIdentity(
-          writeSdk,
-          writeIdentityId,
-          masterKeyWif,
-          undefined,
-          [newKeyId],
-        );
+        await updateIdentity(writeSdk, keyManager, undefined, [newKeyId]);
 
         // Re-fetch and verify key was disabled
-        const afterDisable = await writeSdk.identities.fetch(writeIdentityId);
+        const afterDisable = await writeSdk.identities.fetch(
+          keyManager.identityId,
+        );
         const afterDisableJson = afterDisable.toJSON();
         const disabledKey = afterDisableJson.publicKeys.find(
           (k) => k.id === newKeyId,

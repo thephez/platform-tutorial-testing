@@ -1,26 +1,16 @@
-/* import { EvoSDK, IdentitySigner } from '@dashevo/evo-sdk';
+/* import { EvoSDK } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 const sdk = EvoSDK.testnetTrusted();
 await sdk.connect();
 
-const identityId = 'your identity id here';
-const privateKeyWif = 'your private key in WIF format here'; */
-
-import { IdentitySigner } from '@dashevo/evo-sdk';
-
-async function transferCredits(
+const keyManager = await IdentityKeyManager.create({
   sdk,
-  identityId,
-  privateKeyWif,
-  recipientId,
-  amount,
-) {
-  // Fetch the sender identity
-  const identity = await sdk.identities.fetch(identityId);
+  mnemonic: 'your twelve word mnemonic here',
+}); */
 
-  // Create the signer with the private key
-  const signer = new IdentitySigner();
-  signer.addKeyFromWif(privateKeyWif);
+async function transferCredits(sdk, keyManager, recipientId, amount) {
+  const { identity, signer } = await keyManager.getTransfer();
 
   // Transfer credits to the recipient identity
   return sdk.identities.creditTransfer({
@@ -33,8 +23,7 @@ async function transferCredits(
 
 /* transferCredits(
   sdk,
-  identityId,
-  privateKeyWif,
+  keyManager,
   'recipient identity id here',
   1000000,
 )
