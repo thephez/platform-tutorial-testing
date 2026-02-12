@@ -753,9 +753,21 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         // a CoreScript output + sufficient balance. Skipped by default.
       });
 
-      it.skip('createIdentityFromAddresses - creates permanent on-chain state', async function () {
-        // Identity creation from addresses is expensive and creates
-        // permanent on-chain state. Skipped by default.
+      // Blocked by SDK nonce off-by-one bug: https://github.com/dashpay/platform/issues/3083
+      it.skip('createIdentityFromAddresses - should create identity from address', async function () {
+        this.timeout(60000);
+        const result = await createIdentityFromAddresses(
+          writeSdk,
+          addressKeyManager,
+          writeMnemonic,
+          network,
+          5000000,
+        );
+        expect(result.identity).to.be.an.instanceOf(Identity);
+        const newId = result.identity.id.toString();
+        expect(newId).to.be.a('string').with.length.greaterThan(0);
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | new identity: ${newId} (index ${result.identityIndex})`;
       });
     });
 
