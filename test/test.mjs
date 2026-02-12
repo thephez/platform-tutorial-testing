@@ -309,7 +309,6 @@ const writeIdentityId = process.env.IDENTITY_ID;
 const writePrivateKeyWif = process.env.PRIVATE_KEY_WIF;
 const writeKeyId = Number(process.env.IDENTITY_PUBLIC_KEY_ID || 1);
 const transferKeyWif = process.env.TRANSFER_KEY_WIF;
-const masterKeyWif = process.env.MASTER_KEY_WIF;
 const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
@@ -487,9 +486,10 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         expect(contractId, 'registerContract must succeed first').to.be.a(
           'string',
         );
-        expect(keyManager, 'keyManager requires PLATFORM_WALLET_MNEMONIC').to.be.an(
-          'object',
-        );
+        expect(
+          keyManager,
+          'keyManager requires PLATFORM_WALLET_MNEMONIC',
+        ).to.be.an('object');
         const doc = await submitDocument(
           writeSdk,
           keyManager,
@@ -633,8 +633,8 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
       });
 
       it('updateIdentity - should add a new key to an identity', async function () {
-        if (!masterKeyWif) {
-          this.skip('MASTER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         this.timeout(10000);
@@ -647,7 +647,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
         );
 
         // Fetch identity to determine next available key ID
-        const identity = await writeSdk.identities.fetch(writeIdentityId);
+        const identity = await writeSdk.identities.fetch(keyManager.identityId);
         const existingKeys = identity.toJSON().publicKeys;
         const maxKeyId = existingKeys.reduce(
           (max, k) => Math.max(max, k.id),
@@ -669,8 +669,7 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         const result = await updateIdentity(
           writeSdk,
-          writeIdentityId,
-          masterKeyWif,
+          keyManager,
           [newKey],
           undefined,
           [keyPair.privateKeyWif],
@@ -678,12 +677,12 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
         expect(result).to.be.an.instanceOf(Identity);
         const resultJson = result.toJSON();
-        expect(resultJson).to.have.property('id', writeIdentityId);
+        expect(resultJson).to.have.property('id', keyManager.identityId);
         expect(resultJson).to.have.property('balance').that.is.a('number');
         expect(resultJson).to.have.property('publicKeys').that.is.an('array');
 
         // Re-fetch and verify key was added
-        const afterAdd = await writeSdk.identities.fetch(writeIdentityId);
+        const afterAdd = await writeSdk.identities.fetch(keyManager.identityId);
         const afterAddJson = afterAdd.toJSON();
         const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
         expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
@@ -698,22 +697,18 @@ const hasWriteCredentials = writeIdentityId && writePrivateKeyWif;
 
       it('updateIdentity - should disable a key on an identity', async function () {
         expect(newKeyId, 'add-key test must succeed first').to.be.a('number');
-        if (!masterKeyWif) {
-          this.skip('MASTER_KEY_WIF not set');
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
         this.timeout(10000);
 
-        await updateIdentity(
-          writeSdk,
-          writeIdentityId,
-          masterKeyWif,
-          undefined,
-          [newKeyId],
-        );
+        await updateIdentity(writeSdk, keyManager, undefined, [newKeyId]);
 
         // Re-fetch and verify key was disabled
-        const afterDisable = await writeSdk.identities.fetch(writeIdentityId);
+        const afterDisable = await writeSdk.identities.fetch(
+          keyManager.identityId,
+        );
         const afterDisableJson = afterDisable.toJSON();
         const disabledKey = afterDisableJson.publicKeys.find(
           (k) => k.id === newKeyId,

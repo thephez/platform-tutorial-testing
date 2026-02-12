@@ -60,11 +60,12 @@ class IdentityKeyManager {
     identityIndex = 0,
   }) {
     const coin = network === 'testnet' ? 1 : 5;
-    const derive = (keyIndex) => wallet.deriveKeyFromSeedWithPath({
-      mnemonic,
-      path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
-      network,
-    });
+    const derive = (keyIndex) =>
+      wallet.deriveKeyFromSeedWithPath({
+        mnemonic,
+        path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
+        network,
+      });
 
     const [masterKey, authHighKey, authKey, transferKey, encryptionKey] =
       await Promise.all([
@@ -90,10 +91,19 @@ class IdentityKeyManager {
 
     return new IdentityKeyManager(sdk, resolvedId, {
       master: { keyId: 0, privateKeyWif: masterKey.toObject().privateKeyWif },
-      authHigh: { keyId: 1, privateKeyWif: authHighKey.toObject().privateKeyWif },
+      authHigh: {
+        keyId: 1,
+        privateKeyWif: authHighKey.toObject().privateKeyWif,
+      },
       auth: { keyId: 2, privateKeyWif: authKey.toObject().privateKeyWif },
-      transfer: { keyId: 3, privateKeyWif: transferKey.toObject().privateKeyWif },
-      encryption: { keyId: 4, privateKeyWif: encryptionKey.toObject().privateKeyWif },
+      transfer: {
+        keyId: 3,
+        privateKeyWif: transferKey.toObject().privateKeyWif,
+      },
+      encryption: {
+        keyId: 4,
+        privateKeyWif: encryptionKey.toObject().privateKeyWif,
+      },
     });
   }
 
@@ -112,16 +122,24 @@ class IdentityKeyManager {
   }
 
   /** CRITICAL auth (key 2) — contracts, documents, names. */
-  async getAuth() { return this.getSigner('auth'); }
+  async getAuth() {
+    return this.getSigner('auth');
+  }
 
   /** HIGH auth (key 1) — documents, names. */
-  async getAuthHigh() { return this.getSigner('authHigh'); }
+  async getAuthHigh() {
+    return this.getSigner('authHigh');
+  }
 
   /** TRANSFER — credit transfers, withdrawals. */
-  async getTransfer() { return this.getSigner('transfer'); }
+  async getTransfer() {
+    return this.getSigner('transfer');
+  }
 
   /** ENCRYPTION MEDIUM — encrypted messaging/data. */
-  async getEncryption() { return this.getSigner('encryption'); }
+  async getEncryption() {
+    return this.getSigner('encryption');
+  }
 
   /**
    * MASTER — identity updates (add/disable keys).
