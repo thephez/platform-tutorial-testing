@@ -1,8 +1,6 @@
-/* import { wallet } from '@dashevo/evo-sdk';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const mnemonic = 'your twelve word mnemonic here';
-const network = 'testnet';
-const identityIndex = 0; */
+const { sdk } = await setupDashClient(); */
 
 import { wallet } from '@dashevo/evo-sdk';
 
@@ -31,7 +29,7 @@ async function deriveKeysFromMnemonic(
   const keys = [];
 
   for (let keyIndex = 0; keyIndex < keyCount; keyIndex++) {
-    const path = `m/9'/${coin}'/5'/0'/${identityIndex}'/${keyIndex}'`;
+    const path = `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`;
     const keyInfo = await wallet.deriveKeyFromSeedWithPath({
       mnemonic,
       path,

@@ -180,10 +180,10 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
         expect(key).to.have.property('network', 'testnet');
       });
 
-      // Verify DIP-9 path structure
-      expect(keys[0].path).to.equal("m/9'/1'/5'/0'/0'/0'");
-      expect(keys[1].path).to.equal("m/9'/1'/5'/0'/0'/1'");
-      expect(keys[2].path).to.equal("m/9'/1'/5'/0'/0'/2'");
+      // Verify DIP-9 path structure: m/9'/{coin}'/5'/0'/0'/{identityIndex}'/{keyIndex}'
+      expect(keys[0].path).to.equal("m/9'/1'/5'/0'/0'/0'/0'");
+      expect(keys[1].path).to.equal("m/9'/1'/5'/0'/0'/0'/1'");
+      expect(keys[2].path).to.equal("m/9'/1'/5'/0'/0'/0'/2'");
 
       // Keys should be unique
       const wifs = keys.map((k) => k.privateKeyWif);
@@ -201,7 +201,7 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
       const keys0 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 0, 1);
       const keys1 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 1, 1);
       expect(keys0[0].privateKeyWif).to.not.equal(keys1[0].privateKeyWif);
-      expect(keys1[0].path).to.equal("m/9'/1'/5'/0'/1'/0'");
+      expect(keys1[0].path).to.equal("m/9'/1'/5'/0'/0'/1'/0'");
     });
   });
 
