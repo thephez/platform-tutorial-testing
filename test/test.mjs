@@ -315,6 +315,63 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
       this.test.title += ` | ${id}: ${balance}`;
     });
   });
+
+  describe('Platform Address tutorials', function () {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    it('derivePlatformAddress - should derive a bech32m address from mnemonic', async function () {
+      const result = await derivePlatformAddress(testMnemonic, 'testnet');
+      expect(result.address).to.be.a('string');
+      expect(result.address.startsWith('tdash1'), `expected address to start with tdash1, got: ${result.address}`).to.be.true;
+      expect(result.privateKeyWif).to.be.a('string');
+      expect(result.publicKey).to.be.a('string');
+      expect(result.path).to.equal("m/44'/1'/0'/0/0");
+      this.test.title += ` | ${result.address}`;
+    });
+
+    it('derivePlatformAddress - should be deterministic', async function () {
+      const r1 = await derivePlatformAddress(testMnemonic, 'testnet');
+      const r2 = await derivePlatformAddress(testMnemonic, 'testnet');
+      expect(r1.address).to.equal(r2.address);
+      expect(r1.privateKeyWif).to.equal(r2.privateKeyWif);
+    });
+
+    it('derivePlatformAddress - different indices should produce different addresses', async function () {
+      const r0 = await derivePlatformAddress(testMnemonic, 'testnet', 0);
+      const r1 = await derivePlatformAddress(testMnemonic, 'testnet', 1);
+      expect(r0.address).to.not.equal(r1.address);
+      expect(r1.path).to.equal("m/44'/1'/0'/0/1");
+    });
+
+    it('getAddressInfo - should return undefined for unfunded address', async function () {
+      // Generate a random address that has never been funded
+      const randomMnemonic = await wallet.generateMnemonic();
+      const addr = await derivePlatformAddress(randomMnemonic, 'testnet');
+      const result = await getAddressInfo(sdk, addr.address);
+      expect(result).to.be.undefined;
+    });
+
+    it('getAddressInfo - should return PlatformAddressInfo for a funded address', async function () {
+      const addr = await derivePlatformAddress(testMnemonic, 'testnet');
+      const result = await getAddressInfo(sdk, addr.address);
+      if (result === undefined) {
+        this.skip('test mnemonic address is not funded on this network');
+        return;
+      }
+      expect(result).to.be.an.instanceOf(PlatformAddressInfo);
+      expect(typeof result.balance).to.equal('bigint');
+      expect(typeof result.nonce).to.equal('bigint');
+      this.test.title += ` | balance: ${result.balance}`;
+    });
+
+    it('getAddressesInfo - should handle address queries', async function () {
+      const addr = await derivePlatformAddress(testMnemonic, 'testnet');
+      const result = await getAddressesInfo(sdk, [addr.address]);
+      expect(result).to.be.instanceOf(Map);
+      expect(result.size).to.equal(1);
+    });
+  });
 });
 
 // Write tutorial tests — require PLATFORM_MNEMONIC env var
