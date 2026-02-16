@@ -1,0 +1,18 @@
+{
+  "name": "docusaurus-interactive-poc",
+  "private": true,
+  "version": "0.0.2",
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve"
+  },
+  "dependencies": {
+    "@codesandbox/sandpack-react": "2.19.8",
+    "@docusaurus/core": "3.9.1",
+    "@docusaurus/preset-classic": "3.9.1",
+    "clsx": "2.1.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

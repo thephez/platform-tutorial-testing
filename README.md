@@ -40,6 +40,11 @@ See [.env.example](./.env.example) for a complete example.
 | `npm run test:deprecated:integration` | Run deprecated js-dash-sdk integration tests |
 | `npm run test:deprecated:queries` | Run deprecated js-dash-sdk query tests |
 
+
+### Interactive Docs PoC
+
+A Docusaurus + lightweight in-page runner (Sandpack) proof of concept is available in [`docs-poc/docusaurus-stackblitz`](./docs-poc/docusaurus-stackblitz).
+
 ### Deprecated Tutorials (js-dash-sdk)
 
 Deprecated tutorials remain in `tutorials/js-dash-sdk-deprecated/` for reference. These require
