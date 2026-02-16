@@ -1,0 +1,16 @@
+---
+title: Multiple Addresses
+description: Query info for multiple platform addresses at once
+sidebar:
+  order: 3
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getAddressesInfo.js?raw';
+
+When working with multiple platform addresses, you can batch-query their balances and
+nonces in a single request rather than making individual calls. This tutorial
+demonstrates querying information for multiple bech32m platform addresses at once,
+returning the balance and nonce for each.
+
+<Tutorial code={code} client:visible />

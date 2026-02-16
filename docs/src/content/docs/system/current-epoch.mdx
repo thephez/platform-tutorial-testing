@@ -1,0 +1,16 @@
+---
+title: Current Epoch
+description: Get the current epoch information
+sidebar:
+  order: 4
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getCurrentEpoch.js?raw';
+
+The current epoch represents the active time period on Dash Platform. This tutorial
+fetches information about the current epoch, including its index, start height, and
+fee multiplier. This is useful for understanding the current state of the network and
+calculating expected fees for state transitions.
+
+<Tutorial code={code} client:visible />

@@ -1,0 +1,47 @@
+.container {
+  margin-top: 1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--sl-color-bg-sidebar);
+  border-top: 1px solid var(--sl-color-gray-5);
+}
+
+.button {
+  padding: 0.375rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.runButton {
+  background: #008de4;
+  color: white;
+}
+
+.runButton:hover:not(:disabled) {
+  background: #006bb3;
+}
+
+.resetButton {
+  background: var(--sl-color-gray-5);
+  color: var(--sl-color-text);
+}
+
+.resetButton:hover:not(:disabled) {
+  background: var(--sl-color-gray-4);
+}

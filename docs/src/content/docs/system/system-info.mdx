@@ -1,0 +1,16 @@
+---
+title: System Info
+description: Get combined platform status and epoch information
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getSystemInfo.js?raw';
+
+The system info endpoint provides a combined view of platform status and current epoch
+data in a single request. This includes node version, chain height, current epoch number,
+and related timing information. This tutorial demonstrates how to retrieve this combined
+status overview.
+
+<Tutorial code={code} client:visible />

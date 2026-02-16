@@ -1,0 +1,16 @@
+---
+title: Query Documents
+description: Query documents from a data contract with filtering
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getDocuments.js?raw';
+
+Documents are the primary data storage unit on Dash Platform. They are stored according
+to the schemas defined in a data contract and can be queried using a SQL-like syntax with
+where clauses, ordering, and limits. This tutorial demonstrates fetching documents from a
+contract and inspecting their properties.
+
+<Tutorial code={code} client:visible />

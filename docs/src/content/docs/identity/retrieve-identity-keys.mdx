@@ -1,0 +1,16 @@
+---
+title: Identity Keys
+description: List the public keys associated with an identity
+sidebar:
+  order: 3
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveIdentityKeys.js?raw';
+
+Each identity on Dash Platform has one or more public keys used for authentication and
+signing. Keys are assigned different security levels (master, critical, high, medium) and
+purposes (authentication, encryption, transfer, voting). This tutorial retrieves all
+public keys associated with an identity.
+
+<Tutorial code={code} client:visible />

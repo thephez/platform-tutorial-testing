@@ -1,0 +1,16 @@
+---
+title: Names by Identity
+description: List DPNS names registered to an identity
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveNameByRecord.js?raw';
+
+An identity on Dash Platform can have one or more DPNS names registered to it. This
+tutorial queries the DPNS contract to find all names associated with a specific identity
+ID. The results include each name's label, normalized label, and the identity record it
+points to.
+
+<Tutorial code={code} client:visible />

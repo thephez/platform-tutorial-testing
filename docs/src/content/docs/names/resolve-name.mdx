@@ -1,0 +1,16 @@
+---
+title: Resolve Name
+description: Look up identity information by DPNS name
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveNameByName.js?raw';
+
+The Dash Platform Name System (DPNS) maps human-readable names to identity IDs, similar
+to how DNS maps domain names to IP addresses. Resolving a name returns the DPNS document
+containing the identity ID, label, and other registration details. This tutorial
+demonstrates looking up a registered name to find the associated identity.
+
+<Tutorial code={code} client:visible />

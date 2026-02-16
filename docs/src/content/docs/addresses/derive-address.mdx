@@ -1,0 +1,16 @@
+---
+title: Derive Address
+description: Derive a bech32m platform address from a mnemonic
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/derivePlatformAddress.js?raw';
+
+Dash Platform uses bech32m-encoded addresses for on-platform fund management. These
+addresses are derived from a mnemonic using a specific derivation path and can hold
+platform credits independently of identity balances. This tutorial demonstrates how to
+derive a platform address from a mnemonic phrase.
+
+<Tutorial code={code} client:visible />

@@ -1,0 +1,16 @@
+---
+title: Identity Balance
+description: Check the credit balance of an identity
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveIdentityBalance.js?raw';
+
+Every identity on Dash Platform has a credit balance used to pay for state transitions
+such as registering names, publishing contracts, and creating documents. The balance is
+denominated in credits, where 1 Dash equals 100,000,000,000 credits. This tutorial
+retrieves the current credit balance for a given identity.
+
+<Tutorial code={code} client:visible />

@@ -1,0 +1,16 @@
+---
+title: Contract History
+description: View the version history of a data contract
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveContractHistory.js?raw';
+
+Data contracts on Dash Platform are versioned. Each time a contract owner updates the
+schema, the revision number increments and the previous version is preserved. This
+tutorial retrieves the version history of a contract, showing how its schema has evolved
+over time.
+
+<Tutorial code={code} client:visible />

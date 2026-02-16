@@ -1,0 +1,16 @@
+---
+title: Token Info
+description: Get token supply and status information
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getTokenInfo.js?raw';
+
+Dash Platform supports custom tokens defined within data contracts. Each token has
+properties including total supply, paused status, and metadata set by the token creator.
+This tutorial retrieves token status information to inspect the current supply and
+configuration of a token on the network.
+
+<Tutorial code={code} client:visible />

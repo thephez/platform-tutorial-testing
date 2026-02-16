@@ -1,0 +1,16 @@
+---
+title: Retrieve Identity
+description: Fetch identity information by ID from Dash Platform
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveIdentity.js?raw';
+
+Identities are the foundation of Dash Platform. Every user and application on the
+network has a unique identity identified by a 256-bit ID. Retrieving an identity
+returns its balance (in credits), revision number, and associated public keys. This
+tutorial demonstrates how to fetch an identity by its ID using the SDK.
+
+<Tutorial code={code} client:visible />

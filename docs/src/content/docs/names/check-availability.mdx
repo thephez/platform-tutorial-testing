@@ -1,0 +1,16 @@
+---
+title: Check Availability
+description: Check if a DPNS name is available for registration
+sidebar:
+  order: 4
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/checkNameAvailability.js?raw';
+
+Before registering a DPNS name, you can check whether it is already taken. This tutorial
+queries the DPNS contract for a specific name and determines its availability based on
+whether a matching document exists. If no document is returned, the name is available
+for registration.
+
+<Tutorial code={code} client:visible />

@@ -1,0 +1,31 @@
+/* Dash Platform brand colors */
+:root {
+  --sl-color-accent-low: #002b54;
+  --sl-color-accent: #008de4;
+  --sl-color-accent-high: #b3ddf5;
+}
+
+/* Dark mode accent adjustments */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #0a3a6b;
+  --sl-color-accent: #008de4;
+  --sl-color-accent-high: #7ec8f0;
+}
+
+/*
+ * CodeMirror isolation — Starlight sets `body { line-height: 1.75 }`
+ * which inherits into CodeMirror and breaks cursor positioning.
+ * The `not-content` class on the wrapper opts out of Starlight's
+ * .sl-markdown-content spacing rules. This block handles the
+ * inherited line-height and any remaining global resets.
+ */
+.cm-editor {
+  line-height: 1.5 !important;
+}
+
+.cm-editor .cm-content,
+.cm-editor .cm-line,
+.cm-editor .cm-gutters,
+.cm-editor .cm-gutter {
+  line-height: 1.5 !important;
+}

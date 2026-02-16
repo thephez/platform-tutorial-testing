@@ -1,0 +1,16 @@
+---
+title: Network Status
+description: Check Dash Platform network connectivity
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/checkNetworkConnection.js?raw';
+
+Before running other tutorials, it can be useful to verify that the Dash Platform network
+is reachable. This tutorial performs a basic connectivity check against the testnet,
+confirming that the SDK can communicate with platform nodes. A successful connection
+returns network metadata including protocol version and chain info.
+
+<Tutorial code={code} client:visible />

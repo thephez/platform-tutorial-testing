@@ -1,0 +1,16 @@
+---
+title: Retrieve Identity IDs
+description: Find identities associated with a mnemonic using DIP-9 key derivation
+sidebar:
+  order: 4
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveIdentityIds.js?raw';
+
+A single mnemonic can be used to create multiple identities on Dash Platform. The SDK
+uses DIP-9 derivation paths to deterministically derive identity keys from a mnemonic,
+then queries the network to find which identities were registered with those keys. This
+tutorial demonstrates how to enumerate all identity IDs associated with a given mnemonic.
+
+<Tutorial code={code} client:visible />

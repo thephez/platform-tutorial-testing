@@ -1,0 +1,16 @@
+---
+title: Document Queries
+description: Advanced document query patterns with comparison operators
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/queryDocuments.js?raw';
+
+Dash Platform supports a rich query language for filtering documents stored in data
+contracts. You can use comparison operators (equal, greater than, less than, in, starts
+with), combine multiple where clauses, specify sort order, and limit results. This
+tutorial demonstrates several advanced query patterns against a contract's document store.
+
+<Tutorial code={code} client:visible />

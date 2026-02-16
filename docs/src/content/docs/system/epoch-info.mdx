@@ -1,0 +1,16 @@
+---
+title: Epoch Info
+description: Retrieve information for a range of epochs
+sidebar:
+  order: 3
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getEpochInfo.js?raw';
+
+Dash Platform divides time into epochs, each representing a fixed period of blocks. Epoch
+information includes the start and end block heights, fee multiplier, and protocol
+version active during that epoch. This tutorial retrieves data for a range of epochs,
+allowing you to examine how network parameters have changed over time.
+
+<Tutorial code={code} client:visible />

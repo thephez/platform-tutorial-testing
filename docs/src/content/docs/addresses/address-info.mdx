@@ -1,0 +1,16 @@
+---
+title: Address Info
+description: Get balance and nonce for a platform address
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getAddressInfo.js?raw';
+
+Each platform address has an associated credit balance and nonce (transaction count).
+The balance represents the available credits at that address, while the nonce tracks
+the number of state transitions made from it. This tutorial fetches the current balance
+and nonce for a single platform address.
+
+<Tutorial code={code} client:visible />

@@ -1,0 +1,16 @@
+---
+title: Search Names
+description: Search DPNS names by prefix
+sidebar:
+  order: 3
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveNameBySearch.js?raw';
+
+DPNS supports prefix-based searching, allowing you to find registered names that start
+with a given string. This is useful for building autocomplete features or exploring
+which names have been registered on the network. The search returns matching DPNS
+documents with their labels and associated identity records.
+
+<Tutorial code={code} client:visible />

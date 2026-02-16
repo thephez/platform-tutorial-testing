@@ -1,0 +1,16 @@
+---
+title: Retrieve Contract
+description: Fetch a data contract by its ID
+sidebar:
+  order: 1
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/retrieveContract.js?raw';
+
+Data contracts define the schema for documents stored on Dash Platform. Every application
+registers a contract that specifies its document types, properties, and indices. This
+tutorial fetches a data contract by its ID and inspects its structure, including the
+document schemas it defines.
+
+<Tutorial code={code} client:visible />

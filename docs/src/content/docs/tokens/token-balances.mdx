@@ -1,0 +1,15 @@
+---
+title: Token Balances
+description: Check token balances for identities
+sidebar:
+  order: 2
+---
+
+import Tutorial from '../../../components/Tutorial.tsx';
+import code from './examples/getTokenBalances.js?raw';
+
+Token balances track how many units of a particular token each identity holds. This
+tutorial queries the network for the token balance of one or more identities, returning
+the amount held by each. Balances are returned as a map of identity IDs to token amounts.
+
+<Tutorial code={code} client:visible />

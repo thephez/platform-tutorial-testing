@@ -1,0 +1,39 @@
+---
+title: Dash Platform Tutorials
+description: Interactive tutorials for the Dash Platform evo-sdk. Run live code against testnet directly in your browser.
+template: splash
+hero:
+  tagline: Interactive tutorials for the Dash Platform SDK. Edit code, run it against testnet, and see real results — all in your browser.
+  actions:
+    - text: Get Started
+      link: /identity/retrieve-identity/
+      icon: right-arrow
+    - text: SDK Reference
+      link: https://dashpay.github.io/evo-sdk-website/
+      icon: external
+      variant: minimal
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+## Tutorial Categories
+
+<CardGrid>
+  <LinkCard title="Identity" href="/identity/retrieve-identity/" description="Retrieve identities, check balances, list keys, and enumerate identity IDs from a mnemonic." />
+  <LinkCard title="Names (DPNS)" href="/names/resolve-name/" description="Resolve names, search by prefix, and check name availability on the Dash Platform Name System." />
+  <LinkCard title="Contracts" href="/contracts/retrieve-contract/" description="Fetch data contracts and view their version history." />
+  <LinkCard title="Documents" href="/documents/query-documents/" description="Query documents from data contracts with filtering and pagination." />
+  <LinkCard title="Tokens" href="/tokens/token-info/" description="Check token supply, status, and identity token balances." />
+  <LinkCard title="Platform Addresses" href="/addresses/derive-address/" description="Derive bech32m addresses, query balances, and manage platform address funds." />
+  <LinkCard title="Epoch & System" href="/system/network-status/" description="Check network connectivity, node status, and epoch information." />
+</CardGrid>
+
+## How It Works
+
+Each tutorial includes an **editable code editor** with a **Run** button. The Dash Platform SDK loads directly in your browser and executes code against the **testnet** — no installation or server required.
+
+1. Browse to a tutorial
+2. Read the explanation
+3. Click **Run** to execute the example code
+4. Edit the code to experiment
+5. Click **Reset** to restore the original example
