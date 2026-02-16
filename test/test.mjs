@@ -7,6 +7,8 @@ import {
   Identity,
   IdentityCreditTransferResult,
   IdentityPublicKeyInCreation,
+  PlatformAddress,
+  PlatformAddressInfo,
   RegisterDpnsNameResult,
   wallet,
 } from '@dashevo/evo-sdk';
@@ -40,6 +42,15 @@ import {
   getCurrentEpoch,
   getTokenInfo,
   getTokenBalances,
+  AddressKeyManager,
+  derivePlatformAddress,
+  getAddressInfo,
+  getAddressesInfo,
+  transferToAddress,
+  addressTransfer,
+  topUpIdentityFromAddress,
+  addressWithdraw,
+  createIdentityFromAddresses,
 } from '../tutorials/index.mjs';
 import {
   DPNS_CONTRACT_ID,
@@ -315,6 +326,66 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
       this.test.title += ` | ${id}: ${balance}`;
     });
   });
+
+  describe('Platform Address tutorials', function () {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    it('derivePlatformAddress - should derive a bech32m address from mnemonic', async function () {
+      const result = await derivePlatformAddress(testMnemonic, 'testnet');
+      expect(result.address).to.be.a('string');
+      expect(
+        result.address.startsWith('tdash1'),
+        `expected address to start with tdash1, got: ${result.address}`,
+      ).to.be.true;
+      expect(result.privateKeyWif).to.be.a('string');
+      expect(result.publicKey).to.be.a('string');
+      expect(result.path).to.equal("m/44'/1'/0'/0/0");
+      this.test.title += ` | ${result.address}`;
+    });
+
+    it('derivePlatformAddress - should be deterministic', async function () {
+      const r1 = await derivePlatformAddress(testMnemonic, 'testnet');
+      const r2 = await derivePlatformAddress(testMnemonic, 'testnet');
+      expect(r1.address).to.equal(r2.address);
+      expect(r1.privateKeyWif).to.equal(r2.privateKeyWif);
+    });
+
+    it('derivePlatformAddress - different indices should produce different addresses', async function () {
+      const r0 = await derivePlatformAddress(testMnemonic, 'testnet', 0);
+      const r1 = await derivePlatformAddress(testMnemonic, 'testnet', 1);
+      expect(r0.address).to.not.equal(r1.address);
+      expect(r1.path).to.equal("m/44'/1'/0'/0/1");
+    });
+
+    it('getAddressInfo - should return undefined for unfunded address', async function () {
+      // Generate a random address that has never been funded
+      const randomMnemonic = await wallet.generateMnemonic();
+      const addr = await derivePlatformAddress(randomMnemonic, 'testnet');
+      const result = await getAddressInfo(sdk, addr.address);
+      expect(result).to.be.undefined;
+    });
+
+    it('getAddressInfo - should return PlatformAddressInfo for a funded address', async function () {
+      const addr = await derivePlatformAddress(testMnemonic, 'testnet');
+      const result = await getAddressInfo(sdk, addr.address);
+      if (result === undefined) {
+        this.skip('test mnemonic address is not funded on this network');
+        return;
+      }
+      expect(result).to.be.an.instanceOf(PlatformAddressInfo);
+      expect(typeof result.balance).to.equal('bigint');
+      expect(typeof result.nonce).to.equal('bigint');
+      this.test.title += ` | balance: ${result.balance}`;
+    });
+
+    it('getAddressesInfo - should handle address queries', async function () {
+      const addr = await derivePlatformAddress(testMnemonic, 'testnet');
+      const result = await getAddressesInfo(sdk, [addr.address]);
+      expect(result).to.be.instanceOf(Map);
+      expect(result.size).to.equal(1);
+    });
+  });
 });
 
 // Write tutorial tests — require PLATFORM_MNEMONIC env var
@@ -563,6 +634,162 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         expect(result.domainDocumentId.toString())
           .to.be.a('string')
           .with.length.greaterThan(0);
+      });
+    });
+
+    describe('Platform Address write tutorials', function () {
+      let addressKeyManager;
+      const startingBalances = {};
+
+      before(async function () {
+        addressKeyManager = await AddressKeyManager.create({
+          sdk: writeSdk,
+          mnemonic: writeMnemonic,
+          network,
+          count: 2,
+        });
+
+        // Capture starting balances
+        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        const addrInfos = await getAddressesInfo(writeSdk, addrList);
+        addrList.forEach((addr, i) => {
+          const info = Array.from(addrInfos.values())[i];
+          startingBalances[addr] = info?.balance ?? 0n;
+        });
+        startingBalances.identity = await retrieveIdentityBalance(
+          writeSdk,
+          keyManager.identityId,
+        );
+      });
+
+      after(async function () {
+        if (!addressKeyManager) return;
+        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        const addrInfos = await getAddressesInfo(writeSdk, addrList);
+        const endIdentityBalance = await retrieveIdentityBalance(
+          writeSdk,
+          keyManager.identityId,
+        );
+
+        console.log('\n\t--- Platform Address Summary ---');
+        addrList.forEach((addr, i) => {
+          const start = startingBalances[addr] ?? 0n;
+          const info = Array.from(addrInfos.values())[i];
+          const end = info?.balance ?? 0n;
+          const diff = end - start;
+          const sign = diff > 0n ? '+' : '';
+          console.log(`\t  [${i}] ${addr}`);
+          console.log(
+            `\t       start: ${start}  end: ${end}  diff: ${sign}${diff}`,
+          );
+        });
+        const idStart = startingBalances.identity ?? 0n;
+        const idDiff = endIdentityBalance - idStart;
+        const idSign = idDiff > 0n ? '+' : '';
+        console.log(`\t  Identity (${keyManager.identityId})`);
+        console.log(
+          `\t       start: ${idStart}  end: ${endIdentityBalance}  diff: ${idSign}${idDiff}`,
+        );
+        console.log('\t--- End Summary ---\n');
+      });
+
+      it('transferToAddress - should fund platform address from identity', async function () {
+        const recipientAddress = addressKeyManager.primaryAddress.bech32m;
+        this.test.title += ` | from identity: ${keyManager.identityId} -> addr: ${recipientAddress}`;
+        const result = await transferToAddress(
+          writeSdk,
+          keyManager,
+          recipientAddress,
+          10000000,
+        );
+        expect(typeof result.newBalance).to.equal('bigint');
+        expect(result.newBalance > 0n).to.be.true;
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | identity balance: ${result.newBalance}`;
+      });
+
+      it('getAddressInfo - should show funded address', async function () {
+        this.test.title += ` | addr: ${addressKeyManager.primaryAddress.bech32m}`;
+        const result = await getAddressInfo(
+          writeSdk,
+          addressKeyManager.primaryAddress.bech32m,
+        );
+        expect(result).to.be.an.instanceOf(PlatformAddressInfo);
+        expect(result.address).to.be.an.instanceOf(PlatformAddress);
+        expect(typeof result.nonce).to.equal('bigint');
+        expect(typeof result.balance).to.equal('bigint');
+        expect(result.balance > 0n).to.be.true;
+        this.test.title += ` | balance: ${result.balance}, nonce: ${Number(
+          result.nonce,
+        )}`;
+      });
+
+      it('addressTransfer - should transfer between platform addresses', async function () {
+        const fromAddr = addressKeyManager.primaryAddress.bech32m;
+        const toAddr = addressKeyManager.addresses[1].bech32m;
+        this.test.title += ` | from: ${fromAddr} -> to: ${toAddr}`;
+        // Self-transfer: net cost is fees only
+        const result = await addressTransfer(
+          writeSdk,
+          addressKeyManager,
+          toAddr,
+          1000000,
+        );
+        expect(result).to.be.instanceOf(Map);
+        expect(result.size).to.be.greaterThan(0);
+        const entries = Array.from(result.entries());
+        entries.forEach(([addr, info]) => {
+          expect(addr).to.be.an.instanceOf(PlatformAddress);
+          expect(info).to.be.an.instanceOf(PlatformAddressInfo);
+          expect(typeof info.balance).to.equal('bigint');
+        });
+        this.test.title += ` | ${entries.length} address(es) updated`;
+      });
+
+      it('topUpIdentityFromAddress - should top up identity from address', async function () {
+        this.test.title += ` | from addr: ${addressKeyManager.primaryAddress.bech32m} -> identity: ${keyManager.identityId}`;
+        const identity = await writeSdk.identities.fetch(keyManager.identityId);
+        const result = await topUpIdentityFromAddress(
+          writeSdk,
+          addressKeyManager,
+          identity,
+          1000000,
+        );
+        expect(typeof result.newBalance).to.equal('bigint');
+        expect(result.newBalance > 0n).to.be.true;
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | identity balance: ${result.newBalance}`;
+      });
+
+      it(`addressWithdraw - should withdraw to L1 address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
+        this.timeout(60000);
+        const withdrawAmount = 1000000n;
+
+        const result = await addressWithdraw(
+          writeSdk,
+          addressKeyManager,
+          CORE_WITHDRAWAL_ADDRESS,
+          withdrawAmount,
+        );
+        expect(result).to.be.instanceOf(Map);
+        this.test.title += ` | result keys: ${[...result.keys()].length}`;
+      });
+
+      // Blocked by SDK nonce off-by-one bug: https://github.com/dashpay/platform/issues/3083
+      it.skip('createIdentityFromAddresses - should create identity from address', async function () {
+        this.timeout(60000);
+        const result = await createIdentityFromAddresses(
+          writeSdk,
+          addressKeyManager,
+          writeMnemonic,
+          network,
+          5000000,
+        );
+        expect(result.identity).to.be.an.instanceOf(Identity);
+        const newId = result.identity.id.toString();
+        expect(newId).to.be.a('string').with.length.greaterThan(0);
+        expect(result.addressInfos).to.be.instanceOf(Map);
+        this.test.title += ` | new identity: ${newId} (index ${result.identityIndex})`;
       });
     });
 
