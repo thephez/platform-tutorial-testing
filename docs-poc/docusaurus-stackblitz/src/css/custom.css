@@ -1,0 +1,10 @@
+:root {
+  --ifm-color-primary: #3273dc;
+}
+
+.stackblitz-frame {
+  width: 100%;
+  height: 700px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+}
