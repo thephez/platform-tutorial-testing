@@ -26,7 +26,12 @@ async function addressTransfer(
 ) {
   const signer = addressKeyManager.getSigner();
   return sdk.addresses.transfer({
-    inputs: [{ address: addressKeyManager.primaryAddress.bech32m, amount: BigInt(amount) }],
+    inputs: [
+      {
+        address: addressKeyManager.primaryAddress.bech32m,
+        amount: BigInt(amount),
+      },
+    ],
     outputs: [{ address: recipientAddress, amount: BigInt(amount) }],
     signer,
   });

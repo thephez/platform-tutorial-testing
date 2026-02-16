@@ -108,7 +108,12 @@ async function createIdentityFromAddresses(
   // https://github.com/dashpay/platform/issues/3083
   const result = await sdk.addresses.createIdentity({
     identity,
-    inputs: [{ address: addressKeyManager.primaryAddress.bech32m, amount: BigInt(amount) }],
+    inputs: [
+      {
+        address: addressKeyManager.primaryAddress.bech32m,
+        amount: BigInt(amount),
+      },
+    ],
     identitySigner,
     addressSigner,
   });

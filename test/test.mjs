@@ -334,7 +334,10 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
     it('derivePlatformAddress - should derive a bech32m address from mnemonic', async function () {
       const result = await derivePlatformAddress(testMnemonic, 'testnet');
       expect(result.address).to.be.a('string');
-      expect(result.address.startsWith('tdash1'), `expected address to start with tdash1, got: ${result.address}`).to.be.true;
+      expect(
+        result.address.startsWith('tdash1'),
+        `expected address to start with tdash1, got: ${result.address}`,
+      ).to.be.true;
       expect(result.privateKeyWif).to.be.a('string');
       expect(result.publicKey).to.be.a('string');
       expect(result.path).to.equal("m/44'/1'/0'/0/0");
@@ -653,14 +656,20 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
           const info = Array.from(addrInfos.values())[i];
           startingBalances[addr] = info?.balance ?? 0n;
         });
-        startingBalances.identity = await retrieveIdentityBalance(writeSdk, keyManager.identityId);
+        startingBalances.identity = await retrieveIdentityBalance(
+          writeSdk,
+          keyManager.identityId,
+        );
       });
 
       after(async function () {
         if (!addressKeyManager) return;
         const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
         const addrInfos = await getAddressesInfo(writeSdk, addrList);
-        const endIdentityBalance = await retrieveIdentityBalance(writeSdk, keyManager.identityId);
+        const endIdentityBalance = await retrieveIdentityBalance(
+          writeSdk,
+          keyManager.identityId,
+        );
 
         console.log('\n\t--- Platform Address Summary ---');
         addrList.forEach((addr, i) => {
@@ -670,13 +679,17 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
           const diff = end - start;
           const sign = diff > 0n ? '+' : '';
           console.log(`\t  [${i}] ${addr}`);
-          console.log(`\t       start: ${start}  end: ${end}  diff: ${sign}${diff}`);
+          console.log(
+            `\t       start: ${start}  end: ${end}  diff: ${sign}${diff}`,
+          );
         });
         const idStart = startingBalances.identity ?? 0n;
         const idDiff = endIdentityBalance - idStart;
         const idSign = idDiff > 0n ? '+' : '';
         console.log(`\t  Identity (${keyManager.identityId})`);
-        console.log(`\t       start: ${idStart}  end: ${endIdentityBalance}  diff: ${idSign}${idDiff}`);
+        console.log(
+          `\t       start: ${idStart}  end: ${endIdentityBalance}  diff: ${idSign}${idDiff}`,
+        );
         console.log('\t--- End Summary ---\n');
       });
 
@@ -706,7 +719,9 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         expect(typeof result.nonce).to.equal('bigint');
         expect(typeof result.balance).to.equal('bigint');
         expect(result.balance > 0n).to.be.true;
-        this.test.title += ` | balance: ${result.balance}, nonce: ${Number(result.nonce)}`;
+        this.test.title += ` | balance: ${result.balance}, nonce: ${Number(
+          result.nonce,
+        )}`;
       });
 
       it('addressTransfer - should transfer between platform addresses', async function () {
@@ -733,9 +748,7 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
       it('topUpIdentityFromAddress - should top up identity from address', async function () {
         this.test.title += ` | from addr: ${addressKeyManager.primaryAddress.bech32m} -> identity: ${keyManager.identityId}`;
-        const identity = await writeSdk.identities.fetch(
-          keyManager.identityId,
-        );
+        const identity = await writeSdk.identities.fetch(keyManager.identityId);
         const result = await topUpIdentityFromAddress(
           writeSdk,
           addressKeyManager,
@@ -758,11 +771,16 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         const withdrawAmount = 1000000n;
 
         // Decode base58check address to 20-byte hash160 for CoreScript.newP2PKH
-        const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-        const num = CORE_WITHDRAWAL_ADDRESS.split('')
-          .reduce((acc, ch) => acc * 58n + BigInt(ALPHABET.indexOf(ch)), 0n);
+        const ALPHABET =
+          '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        const num = CORE_WITHDRAWAL_ADDRESS.split('').reduce(
+          (acc, ch) => acc * 58n + BigInt(ALPHABET.indexOf(ch)),
+          0n,
+        );
         const hex = num.toString(16).padStart(50, '0'); // 25 bytes = 50 hex chars
-        const coreAddressHash = Uint8Array.from(Buffer.from(hex, 'hex')).subarray(1, 21);
+        const coreAddressHash = Uint8Array.from(
+          Buffer.from(hex, 'hex'),
+        ).subarray(1, 21);
 
         const result = await addressWithdraw(
           writeSdk,

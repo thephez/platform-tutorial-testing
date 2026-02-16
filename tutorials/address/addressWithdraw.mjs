@@ -33,7 +33,12 @@ async function addressWithdraw(
   const outputScript = CoreScript.newP2PKH(coreAddressHash);
 
   return sdk.addresses.withdraw({
-    inputs: [{ address: addressKeyManager.primaryAddress.bech32m, amount: BigInt(amount) }],
+    inputs: [
+      {
+        address: addressKeyManager.primaryAddress.bech32m,
+        amount: BigInt(amount),
+      },
+    ],
     coreFeePerByte,
     pooling: PoolingWasm.Never,
     outputScript,

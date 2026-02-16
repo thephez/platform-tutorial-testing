@@ -29,7 +29,12 @@ async function topUpIdentityFromAddress(
 
   return sdk.addresses.topUpIdentity({
     identity,
-    inputs: [{ address: addressKeyManager.primaryAddress.bech32m, amount: BigInt(amount) }],
+    inputs: [
+      {
+        address: addressKeyManager.primaryAddress.bech32m,
+        amount: BigInt(amount),
+      },
+    ],
     signer,
   });
 }
