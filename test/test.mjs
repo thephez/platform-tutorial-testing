@@ -57,6 +57,7 @@ import {
   IDENTITY_ID,
   IDENTITY_NAME,
   CORE_WITHDRAWAL_ADDRESS,
+  MIN_WITHDRAWAL_AMOUNT,
   HISTORY_CONTRACT_ID,
   TOKEN_ID,
   TOKEN_HOLDER_ID,
@@ -652,8 +653,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         // Capture starting balances
         const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
         const addrInfos = await getAddressesInfo(writeSdk, addrList);
-        addrList.forEach((addr, i) => {
-          const info = Array.from(addrInfos.values())[i];
+        addrList.forEach((addr) => {
+          const info = [...addrInfos.entries()].find(
+            ([k]) => k.toBech32m(network) === addr,
+          )?.[1];
           startingBalances[addr] = info?.balance ?? 0n;
         });
         startingBalances.identity = await retrieveIdentityBalance(
@@ -674,7 +677,9 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         console.log('\n\t--- Platform Address Summary ---');
         addrList.forEach((addr, i) => {
           const start = startingBalances[addr] ?? 0n;
-          const info = Array.from(addrInfos.values())[i];
+          const info = [...addrInfos.entries()].find(
+            ([k]) => k.toBech32m(network) === addr,
+          )?.[1];
           const end = info?.balance ?? 0n;
           const diff = end - start;
           const sign = diff > 0n ? '+' : '';
@@ -700,7 +705,7 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
           writeSdk,
           keyManager,
           recipientAddress,
-          10000000,
+          100000000,
         );
         expect(typeof result.newBalance).to.equal('bigint');
         expect(result.newBalance > 0n).to.be.true;
@@ -763,27 +768,26 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
       it(`addressWithdraw - should withdraw to L1 address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
         this.timeout(60000);
-        const withdrawAmount = 1000000n;
 
         const result = await addressWithdraw(
           writeSdk,
           addressKeyManager,
           CORE_WITHDRAWAL_ADDRESS,
-          withdrawAmount,
+          MIN_WITHDRAWAL_AMOUNT,
         );
         expect(result).to.be.instanceOf(Map);
         this.test.title += ` | result keys: ${[...result.keys()].length}`;
       });
 
       // Blocked by SDK nonce off-by-one bug: https://github.com/dashpay/platform/issues/3083
-      it.skip('createIdentityFromAddresses - should create identity from address', async function () {
+      it('createIdentityFromAddresses - should create identity from address', async function () {
         this.timeout(60000);
         const result = await createIdentityFromAddresses(
           writeSdk,
           addressKeyManager,
           writeMnemonic,
           network,
-          5000000,
+          200000,
         );
         expect(result.identity).to.be.an.instanceOf(Identity);
         const newId = result.identity.id.toString();
@@ -821,14 +825,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
           this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
         }
-        // Withdraw minimal amount to testnet wallet address
-        // Platform minimum is 190,000 credits
-        const withdrawAmount = 200000;
-
         const remainingBalance = await withdrawCredits(
           writeSdk,
           keyManager,
-          withdrawAmount,
+          MIN_WITHDRAWAL_AMOUNT,
           CORE_WITHDRAWAL_ADDRESS,
         );
 

@@ -7,6 +7,7 @@ export const IDENTITY_ID = 'GgZekwh38XcWQTyWWWvmw6CEYFnLU7yiZFPWZEjqKHit';
 export const IDENTITY_NAME = 'Tutorial-Test-000000';
 export const IDENTITY_NAME_BACKUP = 'Tutorial-Test-000000-backup';
 export const CORE_WITHDRAWAL_ADDRESS = 'yWfPMJSN2agyzoKuEM7nW8HoPVBfBqNJfm';
+export const MIN_WITHDRAWAL_AMOUNT = 190000n; // Platform minimum withdrawal (credits)
 export const DOCUMENT_ID = 'E8m6NCCnpschx4WRfk1uLMHqttqMJKPwYt8fWaVSJPrL';
 
 // Testnet contract ID with version history for retrieveContractHistory test (skip when empty)

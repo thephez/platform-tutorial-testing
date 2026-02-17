@@ -54,14 +54,15 @@ async function createIdentityFromAddresses(
     const existing = await sdk.identities.byPublicKeyHash(pubKeyHash);
     if (!existing) break;
   }
+  console.log(`\t[createIdentity] Using identity index: ${identityIndex}`);
 
   // Derive 5 standard identity keys at the found index
   const keySpecs = [
-    { keyId: 0, purpose: 0, securityLevel: 0 }, // MASTER
-    { keyId: 1, purpose: 0, securityLevel: 2 }, // HIGH auth
-    { keyId: 2, purpose: 0, securityLevel: 1 }, // CRITICAL auth
-    { keyId: 3, purpose: 3, securityLevel: 2 }, // TRANSFER
-    { keyId: 4, purpose: 1, securityLevel: 3 }, // ENCRYPTION
+    { keyId: 0, purpose: 'AUTHENTICATION', securityLevel: 'master' },
+    { keyId: 1, purpose: 'AUTHENTICATION', securityLevel: 'high' },
+    { keyId: 2, purpose: 'AUTHENTICATION', securityLevel: 'critical' },
+    { keyId: 3, purpose: 'TRANSFER', securityLevel: 'critical' },
+    { keyId: 4, purpose: 'ENCRYPTION', securityLevel: 'medium' },
   ];
 
   const derivedKeys = await Promise.all(
@@ -82,18 +83,18 @@ async function createIdentityFromAddresses(
       spec.keyId,
       spec.purpose,
       spec.securityLevel,
-      0, // keyType: ECDSA_SECP256K1
+      'ECDSA_SECP256K1',
       false, // readOnly
       pubKeyData,
-      null, // signature
-      null, // contractBounds
+      [], // signature
     );
   });
 
   // Build the identity shell with public keys
   const identity = new Identity(new Identifier(randomBytes(32)));
   keysInCreation.forEach((key) => {
-    identity.addPublicKey(key.toIdentityPublicKey());
+    const ipk = key.toIdentityPublicKey();
+    identity.addPublicKey(ipk);
   });
 
   // Create signers
@@ -104,8 +105,11 @@ async function createIdentityFromAddresses(
   const addressSigner = addressKeyManager.getSigner();
 
   // Create the identity on-chain
-  // NOTE: blocked by SDK nonce off-by-one bug:
+  // NOTE: blocked by SDK nonce off-by-one bug for v3.0.1:
   // https://github.com/dashpay/platform/issues/3083
+  console.log(
+    `\t[createIdentity]   input address: ${addressKeyManager.primaryAddress.bech32m}`,
+  );
   const result = await sdk.addresses.createIdentity({
     identity,
     inputs: [
