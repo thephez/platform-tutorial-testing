@@ -5,17 +5,20 @@ const { sdk, keyManager } = await setupDashClient(); */
 import {
   IdentityPublicKeyInCreation,
   IdentitySigner,
+  KeyType,
+  Purpose,
   PrivateKey,
+  SecurityLevel,
   wallet,
 } from '@dashevo/evo-sdk';
 
 /** Key specs for the 5 standard identity keys (DIP-9). */
 const KEY_SPECS = [
-  { keyId: 0, purpose: 'AUTHENTICATION', securityLevel: 'master' },
-  { keyId: 1, purpose: 'AUTHENTICATION', securityLevel: 'high' },
-  { keyId: 2, purpose: 'AUTHENTICATION', securityLevel: 'critical' },
-  { keyId: 3, purpose: 'TRANSFER', securityLevel: 'critical' },
-  { keyId: 4, purpose: 'ENCRYPTION', securityLevel: 'medium' },
+  { keyId: 0, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.MASTER },
+  { keyId: 1, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.HIGH },
+  { keyId: 2, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.CRITICAL },
+  { keyId: 3, purpose: Purpose.TRANSFER, securityLevel: SecurityLevel.CRITICAL },
+  { keyId: 4, purpose: Purpose.ENCRYPTION, securityLevel: SecurityLevel.MEDIUM },
 ];
 
 /**
@@ -220,7 +223,7 @@ class IdentityKeyManager {
         spec.keyId,
         spec.purpose,
         spec.securityLevel,
-        'ECDSA_SECP256K1',
+        KeyType.ECDSA_SECP256K1,
         false,
         pubKeyData,
         [],
