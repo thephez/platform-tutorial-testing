@@ -7,21 +7,15 @@ const addressKeyManager = await AddressKeyManager.create({
 }); */
 
 import { randomBytes } from 'node:crypto';
-import {
-  Identity,
-  Identifier,
-  IdentityPublicKeyInCreation,
-  IdentitySigner,
-  PrivateKey,
-  wallet,
-} from '@dashevo/evo-sdk';
+import { Identity, Identifier } from '@dashevo/evo-sdk';
+import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
 
 /**
  * Create a new identity funded from platform addresses.
  *
- * Derives identity keys deterministically from the mnemonic using DIP-9
- * paths, finds the first unused identity index, builds the identity with
- * 5 standard keys, and creates it on-chain funded from a platform address.
+ * Uses IdentityKeyManager to find the next unused DIP-9 identity index,
+ * derive 5 standard keys, and build the identity shell. Then creates it
+ * on-chain funded from a platform address.
  *
  * @param {object} sdk - Connected EvoSDK instance
  * @param {object} addressKeyManager - AddressKeyManager instance (provides address signer + funding)
@@ -37,72 +31,17 @@ async function createIdentityFromAddresses(
   network = 'testnet',
   amount,
 ) {
-  const coin = network === 'testnet' ? 1 : 5;
-  const derivePath = (identityIndex, keyIndex) =>
-    `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`;
-
-  // Find the first unused identity index
-  let identityIndex = 0;
-  for (; ; identityIndex++) {
-    const masterKey = await wallet.deriveKeyFromSeedWithPath({
-      mnemonic,
-      path: derivePath(identityIndex, 0),
-      network,
-    });
-    const privateKey = PrivateKey.fromWIF(masterKey.toObject().privateKeyWif);
-    const pubKeyHash = privateKey.getPublicKeyHash();
-    const existing = await sdk.identities.byPublicKeyHash(pubKeyHash);
-    if (!existing) break;
-  }
-  console.log(`\t[createIdentity] Using identity index: ${identityIndex}`);
-
-  // Derive 5 standard identity keys at the found index
-  const keySpecs = [
-    { keyId: 0, purpose: 'AUTHENTICATION', securityLevel: 'master' },
-    { keyId: 1, purpose: 'AUTHENTICATION', securityLevel: 'high' },
-    { keyId: 2, purpose: 'AUTHENTICATION', securityLevel: 'critical' },
-    { keyId: 3, purpose: 'TRANSFER', securityLevel: 'critical' },
-    { keyId: 4, purpose: 'ENCRYPTION', securityLevel: 'medium' },
-  ];
-
-  const derivedKeys = await Promise.all(
-    keySpecs.map((spec) =>
-      wallet.deriveKeyFromSeedWithPath({
-        mnemonic,
-        path: derivePath(identityIndex, spec.keyId),
-        network,
-      }),
-    ),
-  );
-
-  // Build IdentityPublicKeyInCreation for each key
-  const keysInCreation = keySpecs.map((spec, i) => {
-    const keyObj = derivedKeys[i].toObject();
-    const pubKeyData = Uint8Array.from(Buffer.from(keyObj.publicKey, 'hex'));
-    return new IdentityPublicKeyInCreation(
-      spec.keyId,
-      spec.purpose,
-      spec.securityLevel,
-      'ECDSA_SECP256K1',
-      false, // readOnly
-      pubKeyData,
-      [], // signature
-    );
+  // Derive keys at the next unused identity index
+  const keyManager = await IdentityKeyManager.createForNewIdentity({
+    sdk, mnemonic, network,
   });
+  console.log(`\t[createIdentity] Using identity index: ${keyManager.identityIndex}`);
 
-  // Build the identity shell with public keys
+  // Build identity shell with public keys
   const identity = new Identity(new Identifier(randomBytes(32)));
-  keysInCreation.forEach((key) => {
-    const ipk = key.toIdentityPublicKey();
-    identity.addPublicKey(ipk);
+  keyManager.getKeysInCreation().forEach((key) => {
+    identity.addPublicKey(key.toIdentityPublicKey());
   });
-
-  // Create signers
-  const identitySigner = new IdentitySigner();
-  derivedKeys.forEach((dk) => {
-    identitySigner.addKeyFromWif(dk.toObject().privateKeyWif);
-  });
-  const addressSigner = addressKeyManager.getSigner();
 
   // Create the identity on-chain
   // NOTE: blocked by SDK nonce off-by-one bug for v3.0.1:
@@ -118,14 +57,14 @@ async function createIdentityFromAddresses(
         amount: BigInt(amount),
       },
     ],
-    identitySigner,
-    addressSigner,
+    identitySigner: keyManager.getFullSigner(),
+    addressSigner: addressKeyManager.getSigner(),
   });
 
   return {
     identity: result.identity,
     addressInfos: result.addressInfos,
-    identityIndex,
+    identityIndex: keyManager.identityIndex,
   };
 }
 

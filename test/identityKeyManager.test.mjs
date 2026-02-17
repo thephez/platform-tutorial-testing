@@ -1,6 +1,11 @@
 import { expect } from 'chai';
 import dotenv from 'dotenv';
-import { Identity, IdentitySigner } from '@dashevo/evo-sdk';
+import {
+  Identity,
+  IdentityPublicKeyInCreation,
+  IdentitySigner,
+  PrivateKey,
+} from '@dashevo/evo-sdk';
 import {
   IdentityKeyManager,
   createClient,
@@ -39,12 +44,12 @@ describe('IdentityKeyManager', function suite() {
       expect(km.keys.master)
         .to.have.property('privateKeyWif')
         .that.is.a('string');
-      expect(km.keys.auth).to.have.property('keyId', 1);
-      expect(km.keys.auth)
+      expect(km.keys.authHigh).to.have.property('keyId', 1);
+      expect(km.keys.authHigh)
         .to.have.property('privateKeyWif')
         .that.is.a('string');
-      expect(km.keys.authHigh).to.have.property('keyId', 2);
-      expect(km.keys.authHigh)
+      expect(km.keys.auth).to.have.property('keyId', 2);
+      expect(km.keys.auth)
         .to.have.property('privateKeyWif')
         .that.is.a('string');
       expect(km.keys.transfer).to.have.property('keyId', 3);
@@ -73,8 +78,8 @@ describe('IdentityKeyManager', function suite() {
       );
 
       expect(km.keys.master.privateKeyWif).to.equal(rawKeys[0].privateKeyWif);
-      expect(km.keys.auth.privateKeyWif).to.equal(rawKeys[1].privateKeyWif);
-      expect(km.keys.authHigh.privateKeyWif).to.equal(rawKeys[2].privateKeyWif);
+      expect(km.keys.authHigh.privateKeyWif).to.equal(rawKeys[1].privateKeyWif);
+      expect(km.keys.auth.privateKeyWif).to.equal(rawKeys[2].privateKeyWif);
       expect(km.keys.transfer.privateKeyWif).to.equal(rawKeys[3].privateKeyWif);
       expect(km.keys.encryption.privateKeyWif).to.equal(
         rawKeys[4].privateKeyWif,
@@ -243,6 +248,80 @@ describe('IdentityKeyManager', function suite() {
       expect(result)
         .to.have.property('signer')
         .that.is.an.instanceOf(IdentitySigner);
+    });
+  });
+
+  describe('identityIndex', function () {
+    it('should store the provided identityIndex', async function () {
+      const km = await IdentityKeyManager.create({
+        sdk,
+        identityId: IDENTITY_ID,
+        mnemonic: TEST_MNEMONIC,
+        identityIndex: 3,
+      });
+      expect(km.identityIndex).to.equal(3);
+    });
+
+    it('should default identityIndex to 0', async function () {
+      const km = await IdentityKeyManager.create({
+        sdk,
+        identityId: IDENTITY_ID,
+        mnemonic: TEST_MNEMONIC,
+      });
+      expect(km.identityIndex).to.equal(0);
+    });
+  });
+
+  describe('getFullSigner()', function () {
+    it('should return an IdentitySigner with all keys', async function () {
+      const km = await IdentityKeyManager.create({
+        sdk,
+        identityId: IDENTITY_ID,
+        mnemonic: TEST_MNEMONIC,
+      });
+      const signer = km.getFullSigner();
+      expect(signer).to.be.an.instanceOf(IdentitySigner);
+    });
+  });
+
+  describe('getKeysInCreation()', function () {
+    it('should throw when public keys are not available', async function () {
+      const km = await IdentityKeyManager.create({
+        sdk,
+        identityId: IDENTITY_ID,
+        mnemonic: TEST_MNEMONIC,
+      });
+      expect(() => km.getKeysInCreation()).to.throw(
+        'Public key data not available',
+      );
+    });
+
+    it('should return 5 IdentityPublicKeyInCreation when public keys present', async function () {
+      // Construct a manager with publicKey fields (as createForNewIdentity does)
+      const base = await IdentityKeyManager.create({
+        sdk,
+        identityId: IDENTITY_ID,
+        mnemonic: TEST_MNEMONIC,
+      });
+      const withPub = (entry) => {
+        const pk = PrivateKey.fromWIF(entry.privateKeyWif);
+        const publicKey = Buffer.from(pk.getPublicKey().toBytes())
+          .toString('hex');
+        return { ...entry, publicKey };
+      };
+      const km = new IdentityKeyManager(sdk, null, {
+        master: withPub(base.keys.master),
+        authHigh: withPub(base.keys.authHigh),
+        auth: withPub(base.keys.auth),
+        transfer: withPub(base.keys.transfer),
+        encryption: withPub(base.keys.encryption),
+      }, 0);
+
+      const keys = km.getKeysInCreation();
+      expect(keys).to.be.an('array').with.length(5);
+      keys.forEach((k) => {
+        expect(k).to.be.an.instanceOf(IdentityPublicKeyInCreation);
+      });
     });
   });
 });
