@@ -14,11 +14,31 @@ import {
 
 /** Key specs for the 5 standard identity keys (DIP-9). */
 const KEY_SPECS = [
-  { keyId: 0, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.MASTER },
-  { keyId: 1, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.HIGH },
-  { keyId: 2, purpose: Purpose.AUTHENTICATION, securityLevel: SecurityLevel.CRITICAL },
-  { keyId: 3, purpose: Purpose.TRANSFER, securityLevel: SecurityLevel.CRITICAL },
-  { keyId: 4, purpose: Purpose.ENCRYPTION, securityLevel: SecurityLevel.MEDIUM },
+  {
+    keyId: 0,
+    purpose: Purpose.AUTHENTICATION,
+    securityLevel: SecurityLevel.MASTER,
+  },
+  {
+    keyId: 1,
+    purpose: Purpose.AUTHENTICATION,
+    securityLevel: SecurityLevel.HIGH,
+  },
+  {
+    keyId: 2,
+    purpose: Purpose.AUTHENTICATION,
+    securityLevel: SecurityLevel.CRITICAL,
+  },
+  {
+    keyId: 3,
+    purpose: Purpose.TRANSFER,
+    securityLevel: SecurityLevel.CRITICAL,
+  },
+  {
+    keyId: 4,
+    purpose: Purpose.ENCRYPTION,
+    securityLevel: SecurityLevel.MEDIUM,
+  },
 ];
 
 /**
@@ -68,11 +88,12 @@ class IdentityKeyManager {
     identityIndex = 0,
   }) {
     const coin = network === 'testnet' ? 1 : 5;
-    const derive = (keyIndex) => wallet.deriveKeyFromSeedWithPath({
-      mnemonic,
-      path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
-      network,
-    });
+    const derive = (keyIndex) =>
+      wallet.deriveKeyFromSeedWithPath({
+        mnemonic,
+        path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
+        network,
+      });
 
     const [masterKey, authHighKey, authKey, transferKey, encryptionKey] =
       await Promise.all([
@@ -96,22 +117,27 @@ class IdentityKeyManager {
       resolvedId = identity.id.toString();
     }
 
-    return new IdentityKeyManager(sdk, resolvedId, {
-      master: { keyId: 0, privateKeyWif: masterKey.toObject().privateKeyWif },
-      authHigh: {
-        keyId: 1,
-        privateKeyWif: authHighKey.toObject().privateKeyWif,
+    return new IdentityKeyManager(
+      sdk,
+      resolvedId,
+      {
+        master: { keyId: 0, privateKeyWif: masterKey.toObject().privateKeyWif },
+        authHigh: {
+          keyId: 1,
+          privateKeyWif: authHighKey.toObject().privateKeyWif,
+        },
+        auth: { keyId: 2, privateKeyWif: authKey.toObject().privateKeyWif },
+        transfer: {
+          keyId: 3,
+          privateKeyWif: transferKey.toObject().privateKeyWif,
+        },
+        encryption: {
+          keyId: 4,
+          privateKeyWif: encryptionKey.toObject().privateKeyWif,
+        },
       },
-      auth: { keyId: 2, privateKeyWif: authKey.toObject().privateKeyWif },
-      transfer: {
-        keyId: 3,
-        privateKeyWif: transferKey.toObject().privateKeyWif,
-      },
-      encryption: {
-        keyId: 4,
-        privateKeyWif: encryptionKey.toObject().privateKeyWif,
-      },
-    }, identityIndex);
+      identityIndex,
+    );
   }
 
   /**
@@ -160,14 +186,16 @@ class IdentityKeyManager {
     network = 'testnet',
     identityIndex,
   }) {
-    const idx = identityIndex
-      ?? (await IdentityKeyManager.findNextIndex(sdk, mnemonic, network));
+    const idx =
+      identityIndex ??
+      (await IdentityKeyManager.findNextIndex(sdk, mnemonic, network));
     const coin = network === 'testnet' ? 1 : 5;
-    const derive = (keyIndex) => wallet.deriveKeyFromSeedWithPath({
-      mnemonic,
-      path: `m/9'/${coin}'/5'/0'/0'/${idx}'/${keyIndex}'`,
-      network,
-    });
+    const derive = (keyIndex) =>
+      wallet.deriveKeyFromSeedWithPath({
+        mnemonic,
+        path: `m/9'/${coin}'/5'/0'/0'/${idx}'/${keyIndex}'`,
+        network,
+      });
 
     const derivedKeys = await Promise.all(
       KEY_SPECS.map((spec) => derive(spec.keyId)),

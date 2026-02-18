@@ -33,9 +33,13 @@ async function createIdentityFromAddresses(
 ) {
   // Derive keys at the next unused identity index
   const keyManager = await IdentityKeyManager.createForNewIdentity({
-    sdk, mnemonic, network,
+    sdk,
+    mnemonic,
+    network,
   });
-  console.log(`\t[createIdentity] Using identity index: ${keyManager.identityIndex}`);
+  console.log(
+    `\t[createIdentity] Using identity index: ${keyManager.identityIndex}`,
+  );
 
   // Build identity shell with public keys
   const identity = new Identity(new Identifier(randomBytes(32)));
