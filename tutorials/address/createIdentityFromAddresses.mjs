@@ -48,8 +48,6 @@ async function createIdentityFromAddresses(
   });
 
   // Create the identity on-chain
-  // NOTE: blocked by SDK nonce off-by-one bug for v3.0.1:
-  // https://github.com/dashpay/platform/issues/3083
   console.log(
     `\t[createIdentity]   input address: ${addressKeyManager.primaryAddress.bech32m}`,
   );
