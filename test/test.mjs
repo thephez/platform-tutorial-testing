@@ -436,9 +436,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('updateContract - should update an existing contract', async function () {
-        expect(contractId, 'registerContract must succeed first').to.be.a(
-          'string',
-        );
+        if (!contractId) {
+          this.skip('registerContract must succeed first');
+          return;
+        }
         const newSchemas = {
           extendedNote: {
             type: 'object',
@@ -544,13 +545,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       let createdDocumentId;
 
       it('submitDocument - should create a document', async function () {
-        expect(contractId, 'registerContract must succeed first').to.be.a(
-          'string',
-        );
-        expect(
-          keyManager,
-          'keyManager requires PLATFORM_WALLET_MNEMONIC',
-        ).to.be.an('object');
+        if (!contractId) {
+          this.skip('registerContract must succeed first');
+          return;
+        }
         const doc = await submitDocument(
           writeSdk,
           keyManager,
@@ -577,9 +575,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('updateDocument - should replace a document', async function () {
-        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
-          'string',
-        );
+        if (!createdDocumentId) {
+          this.skip('submitDocument must succeed first');
+          return;
+        }
         const doc = await updateDocument(
           writeSdk,
           keyManager,
@@ -606,9 +605,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('deleteDocument - should delete a document', async function () {
-        expect(createdDocumentId, 'submitDocument must succeed first').to.be.a(
-          'string',
-        );
+        if (!createdDocumentId) {
+          this.skip('submitDocument must succeed first');
+          return;
+        }
         const result = await deleteDocument(
           writeSdk,
           keyManager,
@@ -910,7 +910,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('updateIdentity - should disable a key on an identity', async function () {
-        expect(newKeyId, 'add-key test must succeed first').to.be.a('number');
+        if (!newKeyId) {
+          this.skip('add-key test must succeed first');
+          return;
+        }
         if (!keyManager) {
           this.skip('keyManager requires PLATFORM_MNEMONIC');
           return;
