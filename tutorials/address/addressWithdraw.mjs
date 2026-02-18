@@ -37,7 +37,7 @@ async function addressWithdraw(
   // Decode base58check address: [version(1) | hash160(20) | checksum(4)]
   const decoded = bs58.decode(coreAddress);
   const coreAddressHash = decoded.slice(1, 21);
-  const outputScript = CoreScript.newP2PKH(coreAddressHash);
+  const outputScript = CoreScript.fromP2PKH(coreAddressHash);
 
   return sdk.addresses.withdraw({
     inputs: [

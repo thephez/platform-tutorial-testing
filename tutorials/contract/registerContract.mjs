@@ -18,15 +18,14 @@ async function registerContract(
   const nextNonce = (identityNonce || 0n) + 1n;
 
   // Create the data contract
-  const dataContract = new DataContract(
-    identity.id,
-    nextNonce,
-    documentSchemas,
-    definitions, // optional: reusable $ref definitions
-    tokens, // optional: token configuration
-    false, // full_validation
-    undefined, // platform_version
-  );
+  const dataContract = new DataContract({
+    ownerId: identity.id,
+    identityNonce: nextNonce,
+    schemas: documentSchemas,
+    ...(definitions && { definitions }),
+    ...(tokens && { tokens }),
+    fullValidation: false,
+  });
 
   // Publish the contract to the platform
   const publishedContract = await sdk.contracts.publish({

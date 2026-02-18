@@ -16,14 +16,14 @@ async function updateDocument(
   const { identity, identityKey, signer } = await keyManager.getAuth();
 
   // Create the replacement document with incremented revision
-  const document = new Document(
-    documentData,
+  const document = new Document({
+    properties: documentData,
     documentTypeName,
-    BigInt(newRevision),
     dataContractId,
-    identity.id,
-    documentId,
-  );
+    ownerId: identity.id,
+    revision: BigInt(newRevision),
+    id: documentId,
+  });
 
   // Submit the replacement to the platform
   await sdk.documents.replace({

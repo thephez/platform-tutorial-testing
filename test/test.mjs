@@ -7,9 +7,12 @@ import {
   Identity,
   IdentityCreditTransferResult,
   IdentityPublicKeyInCreation,
+  KeyType,
   PlatformAddress,
   PlatformAddressInfo,
+  Purpose,
   RegisterDpnsNameResult,
+  SecurityLevel,
   wallet,
 } from '@dashevo/evo-sdk';
 import {
@@ -861,16 +864,13 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
         newKeyId = maxKeyId + 1;
 
         // Add a new HIGH-level AUTHENTICATION key
-        const newKey = new IdentityPublicKeyInCreation(
-          newKeyId, // id
-          0, // purpose: AUTHENTICATION
-          2, // securityLevel: HIGH
-          0, // keyType: ECDSA_SECP256K1
-          false, // readOnly
-          pubKeyData, // data: compressed public key (33 bytes)
-          null, // signature
-          null, // contractBounds
-        );
+        const newKey = new IdentityPublicKeyInCreation({
+          keyId: newKeyId,
+          purpose: Purpose.AUTHENTICATION,
+          securityLevel: SecurityLevel.HIGH,
+          keyType: KeyType.ECDSA_SECP256K1,
+          data: pubKeyData,
+        });
 
         const result = await updateIdentity(
           writeSdk,

@@ -219,15 +219,13 @@ class IdentityKeyManager {
         );
       }
       const pubKeyData = Uint8Array.from(Buffer.from(key.publicKey, 'hex'));
-      return new IdentityPublicKeyInCreation(
-        spec.keyId,
-        spec.purpose,
-        spec.securityLevel,
-        KeyType.ECDSA_SECP256K1,
-        false,
-        pubKeyData,
-        [],
-      );
+      return new IdentityPublicKeyInCreation({
+        keyId: spec.keyId,
+        purpose: spec.purpose,
+        securityLevel: spec.securityLevel,
+        keyType: KeyType.ECDSA_SECP256K1,
+        data: pubKeyData,
+      });
     });
   }
 

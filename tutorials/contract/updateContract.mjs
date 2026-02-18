@@ -12,7 +12,7 @@ async function updateContract(sdk, keyManager, contractId, newDocumentSchemas) {
   existingContract.version = (existingContract.version || 1) + 1;
 
   // Merge new schemas with existing schemas
-  const existingSchemas = existingContract.getSchemas() || {};
+  const existingSchemas = existingContract.schemas || {};
   const mergedSchemas = { ...existingSchemas, ...newDocumentSchemas };
   existingContract.setSchemas(mergedSchemas, undefined, false, undefined);
 

@@ -13,15 +13,13 @@ async function submitDocument(
 ) {
   const { identity, identityKey, signer } = await keyManager.getAuth();
 
-  // Create a new document (revision 1, ID auto-generated)
-  const document = new Document(
-    documentData,
+  // Create a new document
+  const document = new Document({
+    properties: documentData,
     documentTypeName,
-    BigInt(1),
     dataContractId,
-    identity.id,
-    undefined,
-  );
+    ownerId: identity.id,
+  });
 
   // Submit the document to the platform
   await sdk.documents.create({

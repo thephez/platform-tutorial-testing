@@ -305,17 +305,23 @@ describe('IdentityKeyManager', function suite() {
       });
       const withPub = (entry) => {
         const pk = PrivateKey.fromWIF(entry.privateKeyWif);
-        const publicKey = Buffer.from(pk.getPublicKey().toBytes())
-          .toString('hex');
+        const publicKey = Buffer.from(pk.getPublicKey().toBytes()).toString(
+          'hex',
+        );
         return { ...entry, publicKey };
       };
-      const km = new IdentityKeyManager(sdk, null, {
-        master: withPub(base.keys.master),
-        authHigh: withPub(base.keys.authHigh),
-        auth: withPub(base.keys.auth),
-        transfer: withPub(base.keys.transfer),
-        encryption: withPub(base.keys.encryption),
-      }, 0);
+      const km = new IdentityKeyManager(
+        sdk,
+        null,
+        {
+          master: withPub(base.keys.master),
+          authHigh: withPub(base.keys.authHigh),
+          auth: withPub(base.keys.auth),
+          transfer: withPub(base.keys.transfer),
+          encryption: withPub(base.keys.encryption),
+        },
+        0,
+      );
 
       const keys = km.getKeysInCreation();
       expect(keys).to.be.an('array').with.length(5);
