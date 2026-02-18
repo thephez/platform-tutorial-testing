@@ -17,7 +17,7 @@ import {
 } from '@dashevo/evo-sdk';
 import {
   createClient,
-  setupDashClient,
+  IdentityKeyManager,
   checkNetworkConnection,
   getSystemInfo,
   retrieveIdentity,
@@ -403,11 +403,106 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
     this.timeout(45000);
 
     let writeSdk;
-    let keyManager;
+    let keyManager; // fresh identity — used by all write tests
+    let bootstrapKeyManager; // original identity (index 0) — funding source
+    let suiteAddressKeyManager; // funded addresses — shared with address tests
     let contractId;
 
     before(async function () {
-      ({ sdk: writeSdk, keyManager } = await setupDashClient());
+      this.timeout(30000);
+      const net = process.env.NETWORK || 'testnet';
+
+      // 1. Connect + load bootstrap identity (existing, index 0)
+      writeSdk = await createClient(net);
+      bootstrapKeyManager = await IdentityKeyManager.create({
+        sdk: writeSdk,
+        mnemonic: writeMnemonic,
+        network: net,
+      });
+      const bootstrapBalance = await retrieveIdentityBalance(
+        writeSdk,
+        bootstrapKeyManager.identityId,
+      );
+      console.log(
+        `\t[setup] Bootstrap identity: ${bootstrapKeyManager.identityId} (balance: ${bootstrapBalance})`,
+      );
+
+      // 2. Derive and fund platform addresses
+      suiteAddressKeyManager = await AddressKeyManager.create({
+        sdk: writeSdk,
+        mnemonic: writeMnemonic,
+        network: net,
+        count: 2,
+      });
+      console.log(
+        `\t[setup] Funding address: ${suiteAddressKeyManager.primaryAddress.bech32m}`,
+      );
+      await transferToAddress(
+        writeSdk,
+        bootstrapKeyManager,
+        suiteAddressKeyManager.primaryAddress.bech32m,
+        100000000000n,
+      );
+      console.log('\t[setup] Address funded with 100,000,000,000 credits');
+    });
+
+    after(async function () {
+      if (!keyManager) return;
+      const remaining = await retrieveIdentityBalance(
+        writeSdk,
+        keyManager.identityId,
+      );
+      console.log(
+        `\n\t[teardown] Fresh identity ${keyManager.identityId} remaining balance: ${remaining}`,
+      );
+    });
+
+    describe('Create fresh identity', function () {
+      it('createIdentityFromAddresses - should create a fresh identity for this test run', async function () {
+        this.timeout(60000);
+        let freshIdentityId;
+        let identityIndex;
+        try {
+          const result = await createIdentityFromAddresses(
+            writeSdk,
+            suiteAddressKeyManager,
+            writeMnemonic,
+            network,
+            90000000000,
+          );
+          freshIdentityId = result.identity.id.toString();
+          identityIndex = result.identityIndex;
+        } catch (e) {
+          const match = e.message.match(
+            /proof returned identity (\S+) but (\S+) was created/,
+          );
+          if (!match) throw e;
+          [, freshIdentityId] = match;
+          identityIndex =
+            (await IdentityKeyManager.findNextIndex(
+              writeSdk,
+              writeMnemonic,
+              network,
+            )) - 1;
+        }
+
+        keyManager = await IdentityKeyManager.create({
+          sdk: writeSdk,
+          identityId: freshIdentityId,
+          mnemonic: writeMnemonic,
+          network,
+          identityIndex,
+        });
+
+        expect(freshIdentityId).to.be.a('string').with.length.greaterThan(0);
+        const balance = await retrieveIdentityBalance(
+          writeSdk,
+          freshIdentityId,
+        );
+        expect(typeof balance).to.equal('bigint');
+        expect(balance > 0n).to.be.true;
+        this.test.title += ` | ${freshIdentityId} (index ${identityIndex}, balance: ${balance})`;
+      });
     });
 
     describe('Identity write tutorials', function () {
@@ -541,6 +636,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
     describe('Contract write tutorials', function () {
       it('registerContract - should publish a new contract', async function () {
+        if (!keyManager) {
+          this.skip('fresh identity creation must succeed first');
+          return;
+        }
         const contract = await registerContract(
           writeSdk,
           keyManager,
@@ -606,6 +705,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
     describe('Additional contract schema tests', function () {
       it('should register a contract with indices', async function () {
+        if (!keyManager) {
+          this.skip('fresh identity creation must succeed first');
+          return;
+        }
         const contract = await registerContract(
           writeSdk,
           keyManager,
@@ -755,6 +858,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
     describe('Name tutorials', function () {
       it('registerName - should register a DPNS name', async function () {
+        if (!keyManager) {
+          this.skip('fresh identity creation must succeed first');
+          return;
+        }
         const label = `ready-player-${Date.now()}`;
         const normalizedLabel = await writeSdk.dpns.convertToHomographSafe(
           label,
@@ -773,19 +880,17 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
     });
 
     describe('Platform Address write tutorials', function () {
-      let addressKeyManager;
       const startingBalances = {};
 
       before(async function () {
-        addressKeyManager = await AddressKeyManager.create({
-          sdk: writeSdk,
-          mnemonic: writeMnemonic,
-          network,
-          count: 2,
-        });
-
-        // Capture starting balances
-        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        if (!keyManager) {
+          this.skip('fresh identity creation must succeed first');
+          return;
+        }
+        // Capture starting balances (addresses already funded during suite setup)
+        const addrList = suiteAddressKeyManager.addresses.map(
+          (a) => a.bech32m,
+        );
         const addrInfos = await getAddressesInfo(writeSdk, addrList);
         addrList.forEach((addr) => {
           const info = [...addrInfos.entries()].find(
@@ -800,8 +905,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       after(async function () {
-        if (!addressKeyManager) return;
-        const addrList = addressKeyManager.addresses.map((a) => a.bech32m);
+        if (!suiteAddressKeyManager || !keyManager) return;
+        const addrList = suiteAddressKeyManager.addresses.map(
+          (a) => a.bech32m,
+        );
         const addrInfos = await getAddressesInfo(writeSdk, addrList);
         const endIdentityBalance = await retrieveIdentityBalance(
           writeSdk,
@@ -833,13 +940,14 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('transferToAddress - should fund platform address from identity', async function () {
-        const recipientAddress = addressKeyManager.primaryAddress.bech32m;
+        const recipientAddress =
+          suiteAddressKeyManager.primaryAddress.bech32m;
         this.test.title += ` | from identity: ${keyManager.identityId} -> addr: ${recipientAddress}`;
         const result = await transferToAddress(
           writeSdk,
           keyManager,
           recipientAddress,
-          500000000,
+          10000000,
         );
         expect(typeof result.newBalance).to.equal('bigint');
         expect(result.newBalance > 0n).to.be.true;
@@ -848,10 +956,10 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('getAddressInfo - should show funded address', async function () {
-        this.test.title += ` | addr: ${addressKeyManager.primaryAddress.bech32m}`;
+        this.test.title += ` | addr: ${suiteAddressKeyManager.primaryAddress.bech32m}`;
         const result = await getAddressInfo(
           writeSdk,
-          addressKeyManager.primaryAddress.bech32m,
+          suiteAddressKeyManager.primaryAddress.bech32m,
         );
         expect(result).to.be.an.instanceOf(PlatformAddressInfo);
         expect(result.address).to.be.an.instanceOf(PlatformAddress);
@@ -864,13 +972,13 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('addressTransfer - should transfer between platform addresses', async function () {
-        const fromAddr = addressKeyManager.primaryAddress.bech32m;
-        const toAddr = addressKeyManager.addresses[1].bech32m;
+        const fromAddr = suiteAddressKeyManager.primaryAddress.bech32m;
+        const toAddr = suiteAddressKeyManager.addresses[1].bech32m;
         this.test.title += ` | from: ${fromAddr} -> to: ${toAddr}`;
         // Self-transfer: net cost is fees only
         const result = await addressTransfer(
           writeSdk,
-          addressKeyManager,
+          suiteAddressKeyManager,
           toAddr,
           1000000,
         );
@@ -886,11 +994,11 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
       });
 
       it('topUpIdentityFromAddress - should top up identity from address', async function () {
-        this.test.title += ` | from addr: ${addressKeyManager.primaryAddress.bech32m} -> identity: ${keyManager.identityId}`;
+        this.test.title += ` | from addr: ${suiteAddressKeyManager.primaryAddress.bech32m} -> identity: ${keyManager.identityId}`;
         const identity = await writeSdk.identities.fetch(keyManager.identityId);
         const result = await topUpIdentityFromAddress(
           writeSdk,
-          addressKeyManager,
+          suiteAddressKeyManager,
           identity,
           1000000,
         );
@@ -905,38 +1013,12 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
         const result = await addressWithdraw(
           writeSdk,
-          addressKeyManager,
+          suiteAddressKeyManager,
           CORE_WITHDRAWAL_ADDRESS,
           MIN_WITHDRAWAL_AMOUNT,
         );
         expect(result).to.be.instanceOf(Map);
         this.test.title += ` | result keys: ${[...result.keys()].length}`;
-      });
-
-      // Blocked by SDK nonce off-by-one bug: https://github.com/dashpay/platform/issues/3083
-      it('createIdentityFromAddresses - should create identity from address', async function () {
-        this.timeout(60000);
-        try {
-          const result = await createIdentityFromAddresses(
-            writeSdk,
-            addressKeyManager,
-            writeMnemonic,
-            network,
-            200000,
-          );
-          expect(result.identity).to.be.an.instanceOf(Identity);
-          const newId = result.identity.id.toString();
-          expect(newId).to.be.a('string').with.length.greaterThan(0);
-          expect(result.addressInfos).to.be.instanceOf(Map);
-          this.test.title += ` | new identity: ${newId} (index ${result.identityIndex})`;
-        } catch (e) {
-          const match = e.message.match(/proof returned identity (\S+) but (\S+) was created/);
-          if (match) {
-            this.test.title += ` | new identity: ${match[1]} (proof mismatch - known issue #3083)`;
-            return; // pass — identity was created despite proof error
-          }
-          throw e;
-        }
       });
     });
   },
