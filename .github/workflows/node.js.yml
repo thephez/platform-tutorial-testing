@@ -41,11 +41,7 @@ jobs:
     env:
       CI: true
       NETWORK: 'testnet'
-      IDENTITY_ID: ${{ secrets.IDENTITY_ID }}
-      PRIVATE_KEY_WIF: ${{ secrets.PRIVATE_KEY_WIF }}
-      IDENTITY_PUBLIC_KEY_ID: ${{ secrets.IDENTITY_PUBLIC_KEY_ID }}
-      TRANSFER_KEY_WIF: ${{ secrets.TRANSFER_KEY_WIF }}
-      MASTER_KEY_WIF: ${{ secrets.MASTER_KEY_WIF }}
+      PLATFORM_MNEMONIC: ${{ secrets.PLATFORM_MNEMONIC }}
     strategy:
       matrix:
         node-version: [20]
