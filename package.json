@@ -1,28 +1,32 @@
 {
   "name": "platform-tutorial-testing",
-  "version": "2.0.0",
+  "version": "3.1-dev",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "fmt": "npx prettier@2 --write '**/*.{,js}'",
+    "fmt": "npx prettier@2 --write '**/*.{,js,mjs}'",
     "lint": "eslint .",
-    "test:integration": "mocha test/test --exit",
-    "test:queries": "mocha test/queryTest --exit",
-    "test": "mocha --exit"
+    "test:tutorials": "mocha --slow 500 test/test.mjs --grep 'EVO SDK Tutorial Tests' --exit",
+    "test:tutorials:read-only": "mocha --slow 350 test/test.mjs --grep 'EVO SDK Tutorial Tests \\(read-only\\)' --exit",
+    "test:tutorials:read-write": "mocha --slow 350 test/test.mjs --grep 'EVO SDK Tutorial Tests \\(read-write\\)' --exit",
+    "test:queries": "mocha --slow 150 test/queryTest.mjs --exit",
+    "test:deprecated:integration": "mocha test/js-dash-sdk-deprecated/test.js --exit",
+    "test:deprecated:queries": "mocha test/js-dash-sdk-deprecated/queryTest.js --exit",
+    "test": "mocha --slow 500 test/test.mjs test/queryTest.mjs --exit"
   },
   "author": "thephez",
   "license": "MIT",
   "dependencies": {
-    "@dashevo/wasm-dpp": "^2.0.1",
-    "dash": "^5.0.1"
+    "@dashevo/evo-sdk": "3.1.0-dev.1",
+    "@dashevo/wasm-dpp": "3.1.0-dev.1",
+    "dash": "6.0.1"
   },
   "devDependencies": {
-    "chai": "^4.4.1",
-    "dotenv": "^16.4.5",
-    "eslint": "^8.57.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.29.1",
-    "faker": "5.5.3",
-    "mocha": "^10.4.0"
+    "chai": "6.2.2",
+    "dotenv": "17.2.4",
+    "eslint": "8.57.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-plugin-import": "2.29.1",
+    "mocha": "11.7.5"
   }
 }

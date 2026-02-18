@@ -1,4 +1,4 @@
-name: Update Dash Dependency and Package Version
+name: Update Evo-SDK Dependency and Package Version
 
 on:
   schedule:
@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  update-dash-package:
+  update-evo-sdk:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,34 +28,31 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # Step 4: Check and Update Dash Dependency and Version
-      - name: Check and Update Dash Dependency
-        id: update_dash
+      # Step 4: Check and Update Dependency
+      - name: Check and Update Evo-SDK Dependency
+        id: update_deps
         run: |
           set -e  # Stop execution on any error
 
-          # Get the current version of Dash in package.json
-          CURRENT_DASH_VERSION=$(jq -r '.dependencies.dash // .devDependencies.dash' package.json)
-          
+          # Get current version of @dashevo/evo-sdk in package.json
+          CURRENT_EVOSDK_VERSION=$(jq -r '.dependencies["@dashevo/evo-sdk"]' package.json)
+
           # Extract the version prefix (e.g., ^, ~, or empty)
-          DASH_PREFIX=$(echo "$CURRENT_DASH_VERSION" | grep -o '^[^0-9]*')
-          DASH_VERSION_NUMBER=$(echo "$CURRENT_DASH_VERSION" | grep -o '[0-9].*')
+          EVOSDK_PREFIX=$(echo "$CURRENT_EVOSDK_VERSION" | grep -o '^[^0-9]*')
+          EVOSDK_VERSION_NUMBER=$(echo "$CURRENT_EVOSDK_VERSION" | grep -o '[0-9].*')
 
-          # Get the latest version of Dash
-          LATEST_DASH_VERSION=$(npm show dash version)
-          LATEST_MINOR_PATCH=$(echo "$LATEST_DASH_VERSION" | cut -d. -f2,3)
-          LATEST_WASMDPP_VERSION=$(npm show @dashevo/wasm-dpp version)
+          # Get latest version from npm
+          LATEST_EVOSDK_VERSION=$(npm show @dashevo/evo-sdk version)
+          LATEST_MINOR_PATCH=$(echo "$LATEST_EVOSDK_VERSION" | cut -d. -f2,3)
 
-          echo "Current Dash version: $CURRENT_DASH_VERSION"
-          echo "Latest Dash version: $LATEST_DASH_VERSION"
-          echo "Latest Wasm-DPP version: $LATEST_WASMDPP_VERSION"
+          echo "Current evo-sdk version: $CURRENT_EVOSDK_VERSION"
+          echo "Latest evo-sdk version: $LATEST_EVOSDK_VERSION"
 
-          # Update dash dependencies if needed
-          if [ "$DASH_VERSION_NUMBER" != "$LATEST_DASH_VERSION" ]; then
-            jq '.dependencies.dash = "'"$DASH_PREFIX$LATEST_DASH_VERSION"'"' package.json > package.json.tmp && mv package.json.tmp package.json
-            jq --arg version "$DASH_PREFIX$LATEST_WASMDPP_VERSION" '.dependencies["@dashevo/wasm-dpp"] = $version' package.json > package.json.tmp && mv package.json.tmp package.json
+          # Update dependency if version differs
+          if [ "$EVOSDK_VERSION_NUMBER" != "$LATEST_EVOSDK_VERSION" ]; then
+            jq --arg version "$EVOSDK_PREFIX$LATEST_EVOSDK_VERSION" '.dependencies["@dashevo/evo-sdk"] = $version' package.json > package.json.tmp && mv package.json.tmp package.json
 
-            # Update package version in package.json (keep major version, sync minor and patch)
+            # Update package version (keep major, sync minor and patch with evo-sdk)
             CURRENT_PACKAGE_VERSION=$(jq -r '.version' package.json)
             CURRENT_MAJOR_VERSION=$(echo "$CURRENT_PACKAGE_VERSION" | cut -d. -f1)
             NEW_PACKAGE_VERSION="$CURRENT_MAJOR_VERSION.$LATEST_MINOR_PATCH"
@@ -63,12 +60,11 @@ jobs:
             jq '.version = "'"$NEW_PACKAGE_VERSION"'"' package.json > package.json.tmp && mv package.json.tmp package.json
             echo "Updated package.json version to $NEW_PACKAGE_VERSION"
 
-            npm install dash
-            npm install @dashevo/wasm-dpp
+            npm install @dashevo/evo-sdk
 
             echo "needs_update=true" >> $GITHUB_ENV
           else
-            echo "Dash dependency is up-to-date"
+            echo "Dependency is up-to-date"
             echo "needs_update=false" >> $GITHUB_ENV
           fi
 
@@ -80,8 +76,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: update-deps-and-version
           base: main
-          title: "chore: update Dash dependencies and sync version"
+          title: "chore: update @dashevo/evo-sdk and sync version"
           body: |
-            This pull request updates the `dash` and `@dashevo/wasm-dpp` dependencies to the latest version and syncs the package version, aligning the minor and patch versions with `dash`.
-          commit-message: "chore: update Dash dependencies and sync version"
+            This pull request updates `@dashevo/evo-sdk` to the latest version and syncs the package version, aligning the minor and patch versions with `@dashevo/evo-sdk`.
+          commit-message: "chore: update @dashevo/evo-sdk and sync version"
           reviewers: "thephez"

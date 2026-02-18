@@ -1,0 +1,175 @@
+{
+  "documentSchemas": {
+    "note": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "position": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "tokens": {
+    "0": {
+      "$format_version": "0",
+      "conventions": {
+        "$format_version": "0",
+        "localizations": {
+          "en": {
+            "$format_version": "0",
+            "shouldCapitalize": false,
+            "singularForm": "tutorial-token",
+            "pluralForm": "tutorial-tokens"
+          }
+        },
+        "decimals": 0
+      },
+      "conventionsChangeRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "baseSupply": 100,
+      "maxSupply": null,
+      "keepsHistory": {
+        "$format_version": "0",
+        "keepsTransferHistory": false,
+        "keepsFreezingHistory": false,
+        "keepsMintingHistory": false,
+        "keepsBurningHistory": false,
+        "keepsDirectPricingHistory": false,
+        "keepsDirectPurchaseHistory": false
+      },
+      "startAsPaused": false,
+      "allowTransferToFrozenBalance": false,
+      "maxSupplyChangeRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "distributionRules": {
+        "$format_version": "0",
+        "perpetualDistribution": null,
+        "perpetualDistributionRules": {
+          "V0": {
+            "authorized_to_make_change": "ContractOwner",
+            "admin_action_takers": "ContractOwner",
+            "changing_authorized_action_takers_to_no_one_allowed": true,
+            "changing_admin_action_takers_to_no_one_allowed": true,
+            "self_changing_admin_action_takers_allowed": true
+          }
+        },
+        "preProgrammedDistribution": null,
+        "newTokensDestinationIdentity": null,
+        "newTokensDestinationIdentityRules": {
+          "V0": {
+            "authorized_to_make_change": "ContractOwner",
+            "admin_action_takers": "ContractOwner",
+            "changing_authorized_action_takers_to_no_one_allowed": true,
+            "changing_admin_action_takers_to_no_one_allowed": true,
+            "self_changing_admin_action_takers_allowed": true
+          }
+        },
+        "mintingAllowChoosingDestination": false,
+        "mintingAllowChoosingDestinationRules": {
+          "V0": {
+            "authorized_to_make_change": "ContractOwner",
+            "admin_action_takers": "ContractOwner",
+            "changing_authorized_action_takers_to_no_one_allowed": true,
+            "changing_admin_action_takers_to_no_one_allowed": true,
+            "self_changing_admin_action_takers_allowed": true
+          }
+        },
+        "changeDirectPurchasePricingRules": {
+          "V0": {
+            "authorized_to_make_change": "ContractOwner",
+            "admin_action_takers": "ContractOwner",
+            "changing_authorized_action_takers_to_no_one_allowed": true,
+            "changing_admin_action_takers_to_no_one_allowed": true,
+            "self_changing_admin_action_takers_allowed": true
+          }
+        }
+      },
+      "marketplaceRules": {
+        "$format_version": "0",
+        "tradeMode": "NotTradeable",
+        "tradeModeChangeRules": {
+          "V0": {
+            "authorized_to_make_change": "ContractOwner",
+            "admin_action_takers": "ContractOwner",
+            "changing_authorized_action_takers_to_no_one_allowed": true,
+            "changing_admin_action_takers_to_no_one_allowed": true,
+            "self_changing_admin_action_takers_allowed": true
+          }
+        }
+      },
+      "manualMintingRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "manualBurningRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "freezeRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "unfreezeRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "destroyFrozenFundsRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "emergencyActionRules": {
+        "V0": {
+          "authorized_to_make_change": "ContractOwner",
+          "admin_action_takers": "ContractOwner",
+          "changing_authorized_action_takers_to_no_one_allowed": true,
+          "changing_admin_action_takers_to_no_one_allowed": true,
+          "self_changing_admin_action_takers_allowed": true
+        }
+      },
+      "mainControlGroup": null,
+      "mainControlGroupCanBeModified": "ContractOwner",
+      "description": null
+    }
+  }
+}

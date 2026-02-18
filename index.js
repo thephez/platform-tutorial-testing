@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const Dash = require('dash');
 const dotenv = require('dotenv');
-const tutorials = require('./tutorials');
+const tutorials = require('./tutorials/js-dash-sdk-deprecated');
 
 dotenv.config();
 const mnemonic = process.env.WALLET_MNEMONIC;

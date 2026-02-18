@@ -1,20 +1,12 @@
-# Runs evo-sdk tutorial and query tests
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# Runs deprecated js-dash-sdk tutorial tests (manual trigger only)
 
-name: Node.js CI
+name: Deprecated SDK Tests
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  #schedule:
-    ## * is a special character in YAML so you have to quote this string
-    #- cron:  '0 */8 * * *'
 
 jobs:
-  test_queries:
+  test_deprecated_queries:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -33,19 +25,16 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run build --if-present
-      - name: Run query tests
-        run: npm run test:queries
+      - name: Run deprecated query tests
+        run: npm run test:deprecated:queries
 
-  test_tutorials:
+  test_deprecated_integration:
     runs-on: ubuntu-latest
     env:
       CI: true
       NETWORK: 'testnet'
-      IDENTITY_ID: ${{ secrets.IDENTITY_ID }}
-      PRIVATE_KEY_WIF: ${{ secrets.PRIVATE_KEY_WIF }}
-      IDENTITY_PUBLIC_KEY_ID: ${{ secrets.IDENTITY_PUBLIC_KEY_ID }}
-      TRANSFER_KEY_WIF: ${{ secrets.TRANSFER_KEY_WIF }}
-      MASTER_KEY_WIF: ${{ secrets.MASTER_KEY_WIF }}
+      WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+      SYNC_START_HEIGHT: 1268800
     strategy:
       matrix:
         node-version: [20]
@@ -60,5 +49,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run build --if-present
-      - name: Run tutorial tests
-        run: npm run test:tutorials
+      - name: Run deprecated integration tests
+        run: npm run test:deprecated:integration
