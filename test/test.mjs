@@ -86,7 +86,7 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
     sdk = await createClient(network);
   });
 
-  describe('Network connection and System info', function () {
+  describe('Network connection', function () {
     it('checkNetworkConnection - should return system status', async function () {
       const result = await checkNetworkConnection(sdk);
       expect(result).to.be.an('object');
@@ -111,7 +111,9 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
         .to.have.nested.property('V0.protocol_version')
         .that.is.a('number');
     });
+  });
 
+  describe('Epoch tutorials', function () {
     it('getCurrentEpoch - should return current epoch info', async function () {
       const result = await getCurrentEpoch(sdk);
       expect(result).to.be.an('object');
@@ -406,6 +408,135 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
 
     before(async function () {
       ({ sdk: writeSdk, keyManager } = await setupDashClient());
+    });
+
+    describe('Identity write tutorials', function () {
+      let newKeyId;
+
+      it(`transferCredits - should transfer credits to another identity (${IDENTITY_ID})`, async function () {
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
+          return;
+        }
+        // Transfer a small amount to a known testnet identity
+        const recipientId = IDENTITY_ID;
+        const result = await transferCredits(
+          writeSdk,
+          keyManager,
+          recipientId,
+          100000,
+        );
+        expect(result).to.be.an.instanceOf(IdentityCreditTransferResult);
+        expect(typeof result.senderBalance).to.equal('bigint');
+        expect(result.senderBalance > 0n).to.be.true;
+        expect(typeof result.recipientBalance).to.equal('bigint');
+        expect(result.recipientBalance > 0n).to.be.true;
+      });
+
+      it(`withdrawCredits - should withdraw credits to a Dash address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
+          return;
+        }
+        const remainingBalance = await withdrawCredits(
+          writeSdk,
+          keyManager,
+          MIN_WITHDRAWAL_AMOUNT,
+          CORE_WITHDRAWAL_ADDRESS,
+        );
+
+        // SDK returns remaining balance as bigint
+        expect(typeof remainingBalance).to.equal('bigint');
+        expect(remainingBalance >= 0n).to.be.true;
+      });
+
+      it('updateIdentity - should add a new key to an identity', async function () {
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
+          return;
+        }
+        this.timeout(10000);
+
+        // Generate a unique keypair for the new identity key
+        const keyPair = await wallet.generateKeyPair('testnet');
+        console.log('\tNew key WIF:', keyPair.privateKeyWif);
+        const pubKeyData = Uint8Array.from(
+          Buffer.from(keyPair.publicKey, 'hex'),
+        );
+
+        // Fetch identity to determine next available key ID
+        const identity = await writeSdk.identities.fetch(keyManager.identityId);
+        const existingKeys = identity.toJSON().publicKeys;
+        const maxKeyId = existingKeys.reduce(
+          (max, k) => Math.max(max, k.id),
+          0,
+        );
+        newKeyId = maxKeyId + 1;
+
+        // Add a new HIGH-level AUTHENTICATION key
+        const newKey = new IdentityPublicKeyInCreation({
+          keyId: newKeyId,
+          purpose: Purpose.AUTHENTICATION,
+          securityLevel: SecurityLevel.HIGH,
+          keyType: KeyType.ECDSA_SECP256K1,
+          data: pubKeyData,
+        });
+
+        const result = await updateIdentity(
+          writeSdk,
+          keyManager,
+          [newKey],
+          undefined,
+          [keyPair.privateKeyWif],
+        );
+
+        expect(result).to.be.an.instanceOf(Identity);
+        const resultJson = result.toJSON();
+        expect(resultJson).to.have.property('id', keyManager.identityId);
+        expect(resultJson).to.have.property('balance').that.is.a('number');
+        expect(resultJson).to.have.property('publicKeys').that.is.an('array');
+
+        // Re-fetch and verify key was added
+        const afterAdd = await writeSdk.identities.fetch(keyManager.identityId);
+        const afterAddJson = afterAdd.toJSON();
+        const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
+        expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
+          'object',
+        );
+        expect(addedKey.purpose).to.equal(0); // AUTHENTICATION
+        expect(addedKey.securityLevel).to.equal(2); // HIGH
+        expect(addedKey.type).to.equal(0); // ECDSA_SECP256K1
+        expect(addedKey.disabledAt).to.be.null;
+        this.test.title += ` (key ${newKeyId})`;
+      });
+
+      it('updateIdentity - should disable a key on an identity', async function () {
+        if (!newKeyId) {
+          this.skip('add-key test must succeed first');
+          return;
+        }
+        if (!keyManager) {
+          this.skip('keyManager requires PLATFORM_MNEMONIC');
+          return;
+        }
+        this.timeout(10000);
+
+        await updateIdentity(writeSdk, keyManager, undefined, [newKeyId]);
+
+        // Re-fetch and verify key was disabled
+        const afterDisable = await writeSdk.identities.fetch(
+          keyManager.identityId,
+        );
+        const afterDisableJson = afterDisable.toJSON();
+        const disabledKey = afterDisableJson.publicKeys.find(
+          (k) => k.id === newKeyId,
+        );
+        expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an(
+          'object',
+        );
+        expect(disabledKey.disabledAt).to.be.a('number').that.is.greaterThan(0);
+        this.test.title += ` (key ${newKeyId})`;
+      });
     });
 
     describe('Contract write tutorials', function () {
@@ -806,135 +937,6 @@ const writeMnemonic = process.env.PLATFORM_MNEMONIC;
           }
           throw e;
         }
-      });
-    });
-
-    describe('Identity write tutorials', function () {
-      let newKeyId;
-
-      it(`transferCredits - should transfer credits to another identity (${IDENTITY_ID})`, async function () {
-        if (!keyManager) {
-          this.skip('keyManager requires PLATFORM_MNEMONIC');
-          return;
-        }
-        // Transfer a small amount to a known testnet identity
-        const recipientId = IDENTITY_ID;
-        const result = await transferCredits(
-          writeSdk,
-          keyManager,
-          recipientId,
-          100000,
-        );
-        expect(result).to.be.an.instanceOf(IdentityCreditTransferResult);
-        expect(typeof result.senderBalance).to.equal('bigint');
-        expect(result.senderBalance > 0n).to.be.true;
-        expect(typeof result.recipientBalance).to.equal('bigint');
-        expect(result.recipientBalance > 0n).to.be.true;
-      });
-
-      it(`withdrawCredits - should withdraw credits to a Dash address (${CORE_WITHDRAWAL_ADDRESS})`, async function () {
-        if (!keyManager) {
-          this.skip('keyManager requires PLATFORM_MNEMONIC');
-          return;
-        }
-        const remainingBalance = await withdrawCredits(
-          writeSdk,
-          keyManager,
-          MIN_WITHDRAWAL_AMOUNT,
-          CORE_WITHDRAWAL_ADDRESS,
-        );
-
-        // SDK returns remaining balance as bigint
-        expect(typeof remainingBalance).to.equal('bigint');
-        expect(remainingBalance >= 0n).to.be.true;
-      });
-
-      it('updateIdentity - should add a new key to an identity', async function () {
-        if (!keyManager) {
-          this.skip('keyManager requires PLATFORM_MNEMONIC');
-          return;
-        }
-        this.timeout(10000);
-
-        // Generate a unique keypair for the new identity key
-        const keyPair = await wallet.generateKeyPair('testnet');
-        console.log('\tNew key WIF:', keyPair.privateKeyWif);
-        const pubKeyData = Uint8Array.from(
-          Buffer.from(keyPair.publicKey, 'hex'),
-        );
-
-        // Fetch identity to determine next available key ID
-        const identity = await writeSdk.identities.fetch(keyManager.identityId);
-        const existingKeys = identity.toJSON().publicKeys;
-        const maxKeyId = existingKeys.reduce(
-          (max, k) => Math.max(max, k.id),
-          0,
-        );
-        newKeyId = maxKeyId + 1;
-
-        // Add a new HIGH-level AUTHENTICATION key
-        const newKey = new IdentityPublicKeyInCreation({
-          keyId: newKeyId,
-          purpose: Purpose.AUTHENTICATION,
-          securityLevel: SecurityLevel.HIGH,
-          keyType: KeyType.ECDSA_SECP256K1,
-          data: pubKeyData,
-        });
-
-        const result = await updateIdentity(
-          writeSdk,
-          keyManager,
-          [newKey],
-          undefined,
-          [keyPair.privateKeyWif],
-        );
-
-        expect(result).to.be.an.instanceOf(Identity);
-        const resultJson = result.toJSON();
-        expect(resultJson).to.have.property('id', keyManager.identityId);
-        expect(resultJson).to.have.property('balance').that.is.a('number');
-        expect(resultJson).to.have.property('publicKeys').that.is.an('array');
-
-        // Re-fetch and verify key was added
-        const afterAdd = await writeSdk.identities.fetch(keyManager.identityId);
-        const afterAddJson = afterAdd.toJSON();
-        const addedKey = afterAddJson.publicKeys.find((k) => k.id === newKeyId);
-        expect(addedKey, `key ${newKeyId} should exist after add`).to.be.an(
-          'object',
-        );
-        expect(addedKey.purpose).to.equal(0); // AUTHENTICATION
-        expect(addedKey.securityLevel).to.equal(2); // HIGH
-        expect(addedKey.type).to.equal(0); // ECDSA_SECP256K1
-        expect(addedKey.disabledAt).to.be.null;
-        this.test.title += ` (key ${newKeyId})`;
-      });
-
-      it('updateIdentity - should disable a key on an identity', async function () {
-        if (!newKeyId) {
-          this.skip('add-key test must succeed first');
-          return;
-        }
-        if (!keyManager) {
-          this.skip('keyManager requires PLATFORM_MNEMONIC');
-          return;
-        }
-        this.timeout(10000);
-
-        await updateIdentity(writeSdk, keyManager, undefined, [newKeyId]);
-
-        // Re-fetch and verify key was disabled
-        const afterDisable = await writeSdk.identities.fetch(
-          keyManager.identityId,
-        );
-        const afterDisableJson = afterDisable.toJSON();
-        const disabledKey = afterDisableJson.publicKeys.find(
-          (k) => k.id === newKeyId,
-        );
-        expect(disabledKey, `key ${newKeyId} should still exist`).to.be.an(
-          'object',
-        );
-        expect(disabledKey.disabledAt).to.be.a('number').that.is.greaterThan(0);
-        this.test.title += ` (key ${newKeyId})`;
       });
     });
   },
