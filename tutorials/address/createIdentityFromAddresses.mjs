@@ -7,7 +7,7 @@ const addressKeyManager = await AddressKeyManager.create({
 
 import { randomBytes } from 'node:crypto';
 import { Identity, Identifier } from '@dashevo/evo-sdk';
-import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
+import { IdentityKeyManager } from '../sdkClient.mjs';
 
 /**
  * Create a new identity funded from platform addresses.

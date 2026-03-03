@@ -11,6 +11,9 @@ import {
   wallet,
 } from '@dashevo/evo-sdk';
 
+// ⚠️ Tutorial helper — holds WIFs in memory for convenience.
+// Do not use this pattern as-is for production key management.
+
 // ---------------------------------------------------------------------------
 // SDK client helpers
 // ---------------------------------------------------------------------------

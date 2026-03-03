@@ -10,6 +10,8 @@ module.exports = {
   },
   rules: {
     'operator-linebreak': 'off',
+    'implicit-arrow-linebreak': 'off',
+    'object-curly-newline': 'off',
   },
   overrides: [
     {
