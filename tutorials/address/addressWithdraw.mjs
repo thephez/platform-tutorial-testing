@@ -1,5 +1,4 @@
-/* import { setupDashClient } from '../sdkClient.mjs';
-import { AddressKeyManager } from '../AddressKeyManager.mjs';
+/* import { setupDashClient, AddressKeyManager } from '../sdkClient.mjs';
 
 const { sdk } = await setupDashClient();
 const addressKeyManager = await AddressKeyManager.create({
