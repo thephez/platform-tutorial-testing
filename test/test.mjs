@@ -55,6 +55,7 @@ import {
   topUpIdentityFromAddress,
   addressWithdraw,
   createIdentityFromAddresses,
+  getNewWalletInfo,
 } from '../tutorials/index.mjs';
 import {
   DPNS_CONTRACT_ID,
@@ -220,6 +221,15 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
       const keys1 = await deriveKeysFromMnemonic(testMnemonic, 'testnet', 1, 1);
       expect(keys0[0].privateKeyWif).to.not.equal(keys1[0].privateKeyWif);
       expect(keys1[0].path).to.equal("m/9'/1'/5'/0'/0'/1'/0'");
+    });
+
+    it('getNewWalletInfo - should generate mnemonic and address', async function () {
+      const result = await getNewWalletInfo('testnet');
+      expect(result).to.have.property('mnemonic').that.is.a('string');
+      expect(result.mnemonic.split(' ')).to.have.lengthOf(12);
+      expect(result).to.have.property('address').that.is.a('string');
+      expect(result.address).to.match(/^tdash1/);
+      this.test.title += ` | ${result.address} ${result.mnemonic}`;
     });
   });
 

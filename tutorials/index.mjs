@@ -36,3 +36,4 @@ export { addressTransfer } from './address/addressTransfer.mjs';
 export { topUpIdentityFromAddress } from './address/topUpIdentityFromAddress.mjs';
 export { addressWithdraw } from './address/addressWithdraw.mjs';
 export { createIdentityFromAddresses } from './address/createIdentityFromAddresses.mjs';
+export { getNewWalletInfo } from './wallet/getNewWalletInfo.mjs';
