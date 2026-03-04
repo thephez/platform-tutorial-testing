@@ -24,11 +24,11 @@ try {
 // ⚠️ Tutorial helper — holds WIFs in memory for convenience.
 // Do not use this pattern as-is for production key management.
 
-// ---------------------------------------------------------------------------
-// Configuration — edit these values for your environment
-// ---------------------------------------------------------------------------
-// If a .env file exists (and dotenv is installed), its PLATFORM_MNEMONIC and
-// NETWORK values are used automatically. Otherwise edit the values below.
+// ###########################################################################
+// #  CONFIGURATION — edit these values for your environment               #
+// ###########################################################################
+// Option 1: Edit the values below directly
+// Option 2: Create a .env file with PLATFORM_MNEMONIC and NETWORK
 
 const clientConfig = {
   // The network to connect to ('testnet' or 'mainnet')
