@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { Document } from '@dashevo/evo-sdk';
-import { createClient } from '../tutorials/sdkClient.mjs';
+import { createClient } from '../tutorials/setupDashClient.mjs';
 import * as testQueries from '../queries/testQueries.mjs';
 import {
   IDENTITY_ID,

@@ -1,5 +1,5 @@
-export { IdentityKeyManager } from './sdkClient.mjs';
-export { createClient, setupDashClient, clientConfig } from './sdkClient.mjs';
+export { IdentityKeyManager } from './setupDashClient.mjs';
+export { createClient, setupDashClient, clientConfig } from './setupDashClient.mjs';
 export { checkNetworkConnection } from './checkNetworkConnection.mjs';
 export { getSystemInfo } from './getSystemInfo.mjs';
 export { retrieveIdentity } from './identity/retrieveIdentity.mjs';
@@ -27,7 +27,7 @@ export { getEpochInfo } from './epoch/getEpochInfo.mjs';
 export { getCurrentEpoch } from './epoch/getCurrentEpoch.mjs';
 export { getTokenInfo } from './tokens/getTokenInfo.mjs';
 export { getTokenBalances } from './tokens/getTokenBalances.mjs';
-export { AddressKeyManager } from './sdkClient.mjs';
+export { AddressKeyManager } from './setupDashClient.mjs';
 export { derivePlatformAddress } from './address/derivePlatformAddress.mjs';
 export { getAddressInfo } from './address/getAddressInfo.mjs';
 export { getAddressesInfo } from './address/getAddressesInfo.mjs';

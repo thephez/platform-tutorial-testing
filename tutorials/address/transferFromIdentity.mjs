@@ -1,4 +1,4 @@
-/* import { setupDashClient } from '../sdkClient.mjs';
+/* import { setupDashClient } from '../setupDashClient.mjs';
 
 const { sdk, keyManager } = await setupDashClient(); */
 

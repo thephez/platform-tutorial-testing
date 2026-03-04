@@ -1,10 +1,10 @@
-/* import { setupDashClient, clientConfig } from '../sdkClient.mjs';
+/* import { setupDashClient, clientConfig } from '../setupDashClient.mjs';
 
 const { sdk, addressKeyManager } = await setupDashClient(); */
 
 import { randomBytes } from 'node:crypto';
 import { Identity, Identifier } from '@dashevo/evo-sdk';
-import { IdentityKeyManager } from '../sdkClient.mjs';
+import { IdentityKeyManager } from '../setupDashClient.mjs';
 
 /**
  * Create a new identity funded from platform addresses.
