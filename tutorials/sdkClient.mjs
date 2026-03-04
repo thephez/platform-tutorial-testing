@@ -343,6 +343,11 @@ class IdentityKeyManager {
       );
     }
     const key = this.keys[keyName];
+    if (!key) {
+      throw new Error(
+        `Unknown key "${keyName}". Use: ${Object.keys(this.keys).join(', ')}`,
+      );
+    }
     const identity = await this.sdk.identities.fetch(this.id);
     const identityKey = identity.getPublicKeyById(key.keyId);
     const signer = new IdentitySigner();
