@@ -514,20 +514,38 @@ class AddressKeyManager {
 // setupDashClient — convenience wrapper
 // ---------------------------------------------------------------------------
 
-export async function setupDashClient() {
+export async function setupDashClient({
+  requireIdentity = true,
+  identityIndex = 0,
+} = {}) {
   const { network, mnemonic } = clientConfig;
-
   const sdk = await createClient(network);
 
   let keyManager;
   let addressKeyManager;
+
   if (mnemonic) {
-    keyManager = await IdentityKeyManager.create({ sdk, mnemonic, network });
     addressKeyManager = await AddressKeyManager.create({
       sdk,
       mnemonic,
       network,
     });
+
+    if (requireIdentity) {
+      keyManager = await IdentityKeyManager.create({
+        sdk,
+        mnemonic,
+        network,
+        identityIndex,
+      });
+    } else {
+      keyManager = await IdentityKeyManager.createForNewIdentity({
+        sdk,
+        mnemonic,
+        network,
+        identityIndex,
+      });
+    }
   }
 
   return { sdk, keyManager, addressKeyManager };

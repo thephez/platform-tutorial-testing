@@ -601,6 +601,24 @@ describe('setupDashClient()', function () {
       clientConfig.mnemonic = saved;
     }
   });
+
+  it('should not throw for a fresh mnemonic with requireIdentity: false', async function () {
+    const saved = clientConfig.mnemonic;
+    try {
+      clientConfig.mnemonic = TEST_MNEMONIC;
+      const result = await setupDashClient({ requireIdentity: false });
+      expect(result).to.have.property('sdk');
+      expect(result)
+        .to.have.property('keyManager')
+        .that.is.an.instanceOf(IdentityKeyManager);
+      expect(result.keyManager.identityId).to.be.null;
+      expect(result)
+        .to.have.property('addressKeyManager')
+        .that.is.an.instanceOf(AddressKeyManager);
+    } finally {
+      clientConfig.mnemonic = saved;
+    }
+  });
 });
 
 describe('IdentityKeyManager.createForNewIdentity() auto-index', function () {
