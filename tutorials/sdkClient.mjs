@@ -14,7 +14,12 @@ import {
 // Load .env if dotenv is installed (optional — not needed for tutorials).
 // Top-level await requires ESM — .mjs extension ensures this.
 // eslint-disable-next-line import/no-extraneous-dependencies
-try { const { config } = await import('dotenv'); config(); } catch { /* dotenv not installed */ }
+try {
+  const { config } = await import('dotenv');
+  config();
+} catch {
+  /* dotenv not installed */
+}
 
 // ⚠️ Tutorial helper — holds WIFs in memory for convenience.
 // Do not use this pattern as-is for production key management.
@@ -41,9 +46,10 @@ const clientConfig = {
  *   m/9'/{coin}'/5'/0'/0'/{identityIndex}'/{keyIndex}'
  */
 async function dip13KeyPath(network, identityIndex, keyIndex) {
-  const base = network === 'testnet'
-    ? await wallet.derivationPathDip13Testnet(5)
-    : await wallet.derivationPathDip13Mainnet(5);
+  const base =
+    network === 'testnet'
+      ? await wallet.derivationPathDip13Testnet(5)
+      : await wallet.derivationPathDip13Mainnet(5);
   return `${base.path}/0'/0'/${identityIndex}'/${keyIndex}'`;
 }
 
@@ -338,8 +344,8 @@ class IdentityKeyManager {
   async getSigner(keyName) {
     if (!this.id) {
       throw new Error(
-        'Identity ID is not set. Use IdentityKeyManager.create() for an existing identity, '
-        + 'or create/register the identity first and then set the ID.',
+        'Identity ID is not set. Use IdentityKeyManager.create() for an existing identity, ' +
+          'or create/register the identity first and then set the ID.',
       );
     }
     const key = this.keys[keyName];
@@ -429,9 +435,10 @@ class AddressKeyManager {
 
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < count; i += 1) {
-      const pathInfo = network === 'testnet'
-        ? await wallet.derivationPathBip44Testnet(0, 0, i)
-        : await wallet.derivationPathBip44Mainnet(0, 0, i);
+      const pathInfo =
+        network === 'testnet'
+          ? await wallet.derivationPathBip44Testnet(0, 0, i)
+          : await wallet.derivationPathBip44Mainnet(0, 0, i);
       const { path } = pathInfo;
       const keyInfo = await wallet.deriveKeyFromSeedWithPath({
         mnemonic,
@@ -495,7 +502,9 @@ class AddressKeyManager {
   async getInfoAt(index) {
     const entry = this.addresses[index];
     if (!entry) {
-      throw new Error(`No derived address at index ${index} (count=${this.addresses.length})`);
+      throw new Error(
+        `No derived address at index ${index} (count=${this.addresses.length})`,
+      );
     }
     return this.sdk.addresses.get(entry.bech32m);
   }
@@ -514,7 +523,11 @@ export async function setupDashClient() {
   let addressKeyManager;
   if (mnemonic) {
     keyManager = await IdentityKeyManager.create({ sdk, mnemonic, network });
-    addressKeyManager = await AddressKeyManager.create({ sdk, mnemonic, network });
+    addressKeyManager = await AddressKeyManager.create({
+      sdk,
+      mnemonic,
+      network,
+    });
   }
 
   return { sdk, keyManager, addressKeyManager };

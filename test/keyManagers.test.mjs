@@ -261,14 +261,21 @@ describe('IdentityKeyManager', function suite() {
         mnemonic: TEST_MNEMONIC,
       });
       // Derive an extra key to use as the additional WIF
-      const extraKeys = await deriveKeysFromMnemonic(TEST_MNEMONIC, 'testnet', 1, 1);
+      const extraKeys = await deriveKeysFromMnemonic(
+        TEST_MNEMONIC,
+        'testnet',
+        1,
+        1,
+      );
       const extraWif = extraKeys[0].privateKeyWif;
 
       const result = await km.getMaster([extraWif]);
       expect(result.signer).to.be.an.instanceOf(IdentitySigner);
       // Signer should accept the extra WIF without error — verify by
       // checking it's still a valid signer (no throw on construction)
-      expect(result).to.have.property('identity').that.is.an.instanceOf(Identity);
+      expect(result)
+        .to.have.property('identity')
+        .that.is.an.instanceOf(Identity);
     });
   });
 
@@ -570,9 +577,15 @@ describe('setupDashClient()', function () {
     }
     const result = await setupDashClient();
     expect(result).to.have.property('sdk');
-    expect(result).to.have.property('keyManager').that.is.an.instanceOf(IdentityKeyManager);
-    expect(result).to.have.property('addressKeyManager').that.is.an.instanceOf(AddressKeyManager);
-    expect(result.keyManager.identityId).to.be.a('string').with.length.greaterThan(0);
+    expect(result)
+      .to.have.property('keyManager')
+      .that.is.an.instanceOf(IdentityKeyManager);
+    expect(result)
+      .to.have.property('addressKeyManager')
+      .that.is.an.instanceOf(AddressKeyManager);
+    expect(result.keyManager.identityId)
+      .to.be.a('string')
+      .with.length.greaterThan(0);
     expect(result.addressKeyManager.network).to.equal(clientConfig.network);
   });
 
