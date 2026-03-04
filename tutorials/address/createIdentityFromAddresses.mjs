@@ -1,9 +1,6 @@
-/* import { setupDashClient, AddressKeyManager, clientConfig } from '../sdkClient.mjs';
+/* import { setupDashClient } from '../sdkClient.mjs';
 
-const { sdk } = await setupDashClient();
-const addressKeyManager = await AddressKeyManager.create({
-  sdk, mnemonic: clientConfig.mnemonic, network: clientConfig.network,
-}); */
+const { sdk, addressKeyManager } = await setupDashClient(); */
 
 import { randomBytes } from 'node:crypto';
 import { Identity, Identifier } from '@dashevo/evo-sdk';

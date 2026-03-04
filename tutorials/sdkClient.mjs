@@ -483,11 +483,13 @@ export async function setupDashClient() {
   const sdk = await createClient(network);
 
   let keyManager;
+  let addressKeyManager;
   if (mnemonic) {
     keyManager = await IdentityKeyManager.create({ sdk, mnemonic, network });
+    addressKeyManager = await AddressKeyManager.create({ sdk, mnemonic, network });
   }
 
-  return { sdk, keyManager };
+  return { sdk, keyManager, addressKeyManager };
 }
 
 export { IdentityKeyManager, AddressKeyManager, clientConfig };
