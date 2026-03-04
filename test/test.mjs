@@ -518,7 +518,6 @@ if (!writeMnemonic) {
             writeSdk,
             suiteAddressKeyManager,
             writeMnemonic,
-            network,
             FRESH_IDENTITY_AMOUNT,
           );
           freshIdentityId = result.identity.id.toString();
