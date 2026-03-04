@@ -516,7 +516,7 @@ class AddressKeyManager {
 
 export async function setupDashClient({
   requireIdentity = true,
-  identityIndex = 0,
+  identityIndex,
 } = {}) {
   const { network, mnemonic } = clientConfig;
   const sdk = await createClient(network);

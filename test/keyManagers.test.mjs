@@ -619,6 +619,17 @@ describe('setupDashClient()', function () {
       clientConfig.mnemonic = saved;
     }
   });
+
+  it('requireIdentity: false should auto-scan to an unused identity index', async function () {
+    if (!process.env.PLATFORM_MNEMONIC) {
+      this.skip('PLATFORM_MNEMONIC not set');
+    }
+    const { keyManager } = await setupDashClient({ requireIdentity: false });
+    // Must pick an index beyond all registered identities (not 0)
+    expect(keyManager.identityIndex).to.be.a('number').greaterThan(0);
+    expect(keyManager.identityId).to.be.null;
+    this.test.title += ` (index ${keyManager.identityIndex})`;
+  });
 });
 
 describe('IdentityKeyManager.createForNewIdentity() auto-index', function () {
