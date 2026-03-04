@@ -405,8 +405,11 @@ describe(`EVO SDK Tutorial Tests (read-only) (${new Date().toLocaleTimeString()}
   });
 });
 
-// Write tutorial tests — require PLATFORM_MNEMONIC env var
+// Write tutorial tests — require PLATFORM_MNEMONIC env var or clientConfig.mnemonic
 const writeMnemonic = process.env.PLATFORM_MNEMONIC;
+if (!writeMnemonic) {
+  console.log('\n  Skipping read-write tests (no PLATFORM_MNEMONIC set)\n');
+}
 
 (writeMnemonic ? describe : describe.skip)(
   `EVO SDK Tutorial Tests (read-write) (${new Date().toLocaleTimeString()})`,

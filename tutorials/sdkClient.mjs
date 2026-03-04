@@ -11,8 +11,29 @@ import {
   wallet,
 } from '@dashevo/evo-sdk';
 
+// Load .env if dotenv is installed (optional — not needed for tutorials).
+// Top-level await requires ESM — .mjs extension ensures this.
+// eslint-disable-next-line import/no-extraneous-dependencies
+try { const { config } = await import('dotenv'); config(); } catch { /* dotenv not installed */ }
+
 // ⚠️ Tutorial helper — holds WIFs in memory for convenience.
 // Do not use this pattern as-is for production key management.
+
+// ---------------------------------------------------------------------------
+// Configuration — edit these values for your environment
+// ---------------------------------------------------------------------------
+// If a .env file exists (and dotenv is installed), its PLATFORM_MNEMONIC and
+// NETWORK values are used automatically. Otherwise edit the values below.
+
+const clientConfig = {
+  // The network to connect to ('testnet' or 'mainnet')
+  network: process.env.NETWORK || 'testnet',
+
+  // BIP39 mnemonic for wallet operations (identity & address tutorials).
+  // Leave as null for read-only tutorials.
+  mnemonic: process.env.PLATFORM_MNEMONIC || null,
+  // mnemonic: 'your twelve word mnemonic phrase goes here ...',
+};
 
 // ---------------------------------------------------------------------------
 // SDK client helpers
@@ -457,8 +478,7 @@ class AddressKeyManager {
 // ---------------------------------------------------------------------------
 
 export async function setupDashClient() {
-  const network = process.env.NETWORK || 'testnet';
-  const mnemonic = process.env.PLATFORM_MNEMONIC;
+  const { network, mnemonic } = clientConfig;
 
   const sdk = await createClient(network);
 
@@ -470,4 +490,4 @@ export async function setupDashClient() {
   return { sdk, keyManager };
 }
 
-export { IdentityKeyManager, AddressKeyManager };
+export { IdentityKeyManager, AddressKeyManager, clientConfig };

@@ -1,5 +1,5 @@
 export { IdentityKeyManager } from './sdkClient.mjs';
-export { createClient, setupDashClient } from './sdkClient.mjs';
+export { createClient, setupDashClient, clientConfig } from './sdkClient.mjs';
 export { checkNetworkConnection } from './checkNetworkConnection.mjs';
 export { getSystemInfo } from './getSystemInfo.mjs';
 export { retrieveIdentity } from './identity/retrieveIdentity.mjs';

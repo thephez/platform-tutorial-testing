@@ -1,8 +1,8 @@
-/* import { setupDashClient, AddressKeyManager } from '../sdkClient.mjs';
+/* import { setupDashClient, AddressKeyManager, clientConfig } from '../sdkClient.mjs';
 
 const { sdk } = await setupDashClient();
 const addressKeyManager = await AddressKeyManager.create({
-  sdk, mnemonic: process.env.PLATFORM_MNEMONIC, network: 'testnet',
+  sdk, mnemonic: clientConfig.mnemonic, network: clientConfig.network,
 }); */
 
 import { randomBytes } from 'node:crypto';
