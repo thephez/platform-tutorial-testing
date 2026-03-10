@@ -1,10 +1,6 @@
-/* import { setupDashClient } from '../sdkClient.mjs';
-import { AddressKeyManager } from '../AddressKeyManager.mjs';
+/* import { setupDashClient } from '../setupDashClient.mjs';
 
-const { sdk } = await setupDashClient();
-const addressKeyManager = await AddressKeyManager.create({
-  sdk, mnemonic: process.env.PLATFORM_MNEMONIC, network: 'testnet',
-}); */
+const { sdk, addressKeyManager } = await setupDashClient(); */
 
 import { createRequire } from 'node:module';
 import { CoreScript, PoolingWasm } from '@dashevo/evo-sdk';

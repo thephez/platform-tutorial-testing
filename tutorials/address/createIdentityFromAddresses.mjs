@@ -1,14 +1,10 @@
-/* import { setupDashClient } from '../sdkClient.mjs';
-import { AddressKeyManager } from '../AddressKeyManager.mjs';
+/* import { setupDashClient, clientConfig } from '../setupDashClient.mjs';
 
-const { sdk } = await setupDashClient();
-const addressKeyManager = await AddressKeyManager.create({
-  sdk, mnemonic: process.env.PLATFORM_MNEMONIC, network: 'testnet',
-}); */
+const { sdk, addressKeyManager } = await setupDashClient(); */
 
 import { randomBytes } from 'node:crypto';
 import { Identity, Identifier } from '@dashevo/evo-sdk';
-import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
+import { IdentityKeyManager } from '../setupDashClient.mjs';
 
 /**
  * Create a new identity funded from platform addresses.
@@ -20,7 +16,6 @@ import { IdentityKeyManager } from '../IdentityKeyManager.mjs';
  * @param {object} sdk - Connected EvoSDK instance
  * @param {object} addressKeyManager - AddressKeyManager instance (provides address signer + funding)
  * @param {string} mnemonic - BIP39 mnemonic for DIP-9 key derivation
- * @param {string} [network='testnet'] - 'testnet' or 'mainnet'
  * @param {number|bigint} amount - Amount of credits to fund the new identity
  * @returns {Promise<{ identity: Identity, addressInfos: Map, identityIndex: number }>}
  */
@@ -28,9 +23,10 @@ async function createIdentityFromAddresses(
   sdk,
   addressKeyManager,
   mnemonic,
-  network = 'testnet',
   amount,
 ) {
+  const { network } = addressKeyManager;
+
   // Derive keys at the next unused identity index
   const keyManager = await IdentityKeyManager.createForNewIdentity({
     sdk,
@@ -70,7 +66,7 @@ async function createIdentityFromAddresses(
   };
 }
 
-/* createIdentityFromAddresses(sdk, addressKeyManager, process.env.PLATFORM_MNEMONIC, 'testnet', 5000000)
+/* createIdentityFromAddresses(sdk, addressKeyManager, clientConfig.mnemonic, 5000000)
   .then((d) => console.log('Identity created:\n', d))
   .catch((e) => console.error('Something went wrong:\n', e)); */
 

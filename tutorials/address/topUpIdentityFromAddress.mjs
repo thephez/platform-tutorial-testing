@@ -1,10 +1,6 @@
-/* import { setupDashClient } from '../sdkClient.mjs';
-import { AddressKeyManager } from '../AddressKeyManager.mjs';
+/* import { setupDashClient } from '../setupDashClient.mjs';
 
-const { sdk } = await setupDashClient();
-const addressKeyManager = await AddressKeyManager.create({
-  sdk, mnemonic: process.env.PLATFORM_MNEMONIC, network: 'testnet',
-}); */
+const { sdk, addressKeyManager } = await setupDashClient(); */
 
 /**
  * Top up an identity's balance from a funded platform address.

@@ -1,16 +1,84 @@
-/* import { setupDashClient } from './sdkClient.mjs';
-
-const { sdk, keyManager } = await setupDashClient(); */
-
+/* eslint-disable max-classes-per-file */
 import {
+  EvoSDK,
   IdentityPublicKeyInCreation,
   IdentitySigner,
   KeyType,
-  Purpose,
+  PlatformAddressSigner,
   PrivateKey,
+  Purpose,
   SecurityLevel,
   wallet,
 } from '@dashevo/evo-sdk';
+
+// Load .env if dotenv is installed (optional — not needed for tutorials).
+// Top-level await requires ESM — .mjs extension ensures this.
+// eslint-disable-next-line import/no-extraneous-dependencies
+try {
+  const { config } = await import('dotenv');
+  config();
+} catch {
+  /* dotenv not installed */
+}
+
+// ⚠️ Tutorial helper — holds WIFs in memory for convenience.
+// Do not use this pattern as-is for production key management.
+
+// ###########################################################################
+// #  CONFIGURATION — edit these values for your environment               #
+// ###########################################################################
+// Option 1: Edit the values below directly
+// Option 2: Create a .env file with PLATFORM_MNEMONIC and NETWORK
+
+const clientConfig = {
+  // The network to connect to ('testnet' or 'mainnet')
+  network: process.env.NETWORK || 'testnet',
+
+  // BIP39 mnemonic for wallet operations (identity & address tutorials).
+  // Leave as null for read-only tutorials.
+  mnemonic: process.env.PLATFORM_MNEMONIC || null,
+  // mnemonic: 'your twelve word mnemonic phrase goes here ...',
+};
+
+/**
+ * Build a DIP-13 identity key derivation path.
+ * Returns the full 7-level hardened path:
+ *   m/9'/{coin}'/5'/0'/0'/{identityIndex}'/{keyIndex}'
+ */
+export async function dip13KeyPath(network, identityIndex, keyIndex) {
+  const base =
+    network === 'testnet'
+      ? await wallet.derivationPathDip13Testnet(5)
+      : await wallet.derivationPathDip13Mainnet(5);
+  return `${base.path}/0'/0'/${identityIndex}'/${keyIndex}'`;
+}
+
+// ---------------------------------------------------------------------------
+// SDK client helpers
+// ---------------------------------------------------------------------------
+
+export async function createClient(network = 'testnet') {
+  const factories = {
+    testnet: () => EvoSDK.testnetTrusted(),
+    mainnet: () => EvoSDK.mainnetTrusted(),
+    local: () => EvoSDK.localTrusted(),
+  };
+
+  const factory = factories[network];
+  if (!factory) {
+    throw new Error(
+      `Unknown network "${network}". Use: ${Object.keys(factories).join(', ')}`,
+    );
+  }
+
+  const sdk = factory();
+  await sdk.connect();
+  return sdk;
+}
+
+// ---------------------------------------------------------------------------
+// IdentityKeyManager
+// ---------------------------------------------------------------------------
 
 /** Key specs for the 5 standard identity keys (DIP-9). */
 const KEY_SPECS = [
@@ -87,11 +155,10 @@ class IdentityKeyManager {
     network = 'testnet',
     identityIndex = 0,
   }) {
-    const coin = network === 'testnet' ? 1 : 5;
-    const derive = (keyIndex) =>
+    const derive = async (keyIndex) =>
       wallet.deriveKeyFromSeedWithPath({
         mnemonic,
-        path: `m/9'/${coin}'/5'/0'/0'/${identityIndex}'/${keyIndex}'`,
+        path: await dip13KeyPath(network, identityIndex, keyIndex),
         network,
       });
 
@@ -149,23 +216,22 @@ class IdentityKeyManager {
    * @param {string} [network='testnet'] - 'testnet' or 'mainnet'
    * @returns {Promise<number>} The first unused identity index
    */
-  // eslint-disable-next-line no-await-in-loop
   static async findNextIndex(sdk, mnemonic, network = 'testnet') {
-    const coin = network === 'testnet' ? 1 : 5;
+    /* eslint-disable no-await-in-loop */
     for (let i = 0; ; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
+      const path = await dip13KeyPath(network, i, 0);
       const key = await wallet.deriveKeyFromSeedWithPath({
         mnemonic,
-        path: `m/9'/${coin}'/5'/0'/0'/${i}'/0'`,
+        path,
         network,
       });
       const privateKey = PrivateKey.fromWIF(key.toObject().privateKeyWif);
-      // eslint-disable-next-line no-await-in-loop
       const existing = await sdk.identities.byPublicKeyHash(
         privateKey.getPublicKeyHash(),
       );
       if (!existing) return i;
     }
+    /* eslint-enable no-await-in-loop */
   }
 
   /**
@@ -189,11 +255,10 @@ class IdentityKeyManager {
     const idx =
       identityIndex ??
       (await IdentityKeyManager.findNextIndex(sdk, mnemonic, network));
-    const coin = network === 'testnet' ? 1 : 5;
-    const derive = (keyIndex) =>
+    const derive = async (keyIndex) =>
       wallet.deriveKeyFromSeedWithPath({
         mnemonic,
-        path: `m/9'/${coin}'/5'/0'/0'/${idx}'/${keyIndex}'`,
+        path: await dip13KeyPath(network, idx, keyIndex),
         network,
       });
 
@@ -277,7 +342,18 @@ class IdentityKeyManager {
    * @returns {{ identity, identityKey, signer }}
    */
   async getSigner(keyName) {
+    if (!this.id) {
+      throw new Error(
+        'Identity ID is not set. Use IdentityKeyManager.create() for an existing identity, ' +
+          'or create/register the identity first and then set the ID.',
+      );
+    }
     const key = this.keys[keyName];
+    if (!key) {
+      throw new Error(
+        `Unknown key "${keyName}". Use: ${Object.keys(this.keys).join(', ')}`,
+      );
+    }
     const identity = await this.sdk.identities.fetch(this.id);
     const identityKey = identity.getPublicKeyById(key.keyId);
     const signer = new IdentitySigner();
@@ -318,8 +394,161 @@ class IdentityKeyManager {
   }
 }
 
-/* // Usage with a tutorial:
-const { identity, identityKey, signer } = await keyManager.getAuth();
-// Pass to any write tutorial that needs auth signing */
+// ---------------------------------------------------------------------------
+// AddressKeyManager
+// ---------------------------------------------------------------------------
 
-export { IdentityKeyManager };
+/**
+ * Manages platform address keys and signing for address operations.
+ *
+ * Parallel to IdentityKeyManager but for platform address operations.
+ * Derives BIP44 keys from a mnemonic and provides ready-to-use
+ * PlatformAddressSigner instances.
+ *
+ * Platform addresses are bech32m-encoded L2 addresses (tdash1... on testnet)
+ * that hold credits directly, independent of identities.
+ */
+class AddressKeyManager {
+  constructor(sdk, addresses, network) {
+    this.sdk = sdk;
+    this.addresses = addresses; // [{ address, bech32m, privateKeyWif, path }]
+    this.network = network;
+  }
+
+  /** The first derived address (index 0). */
+  get primaryAddress() {
+    return this.addresses[0];
+  }
+
+  /**
+   * Create an AddressKeyManager from a BIP39 mnemonic.
+   * Derives platform address keys using BIP44 paths.
+   *
+   * @param {object} opts
+   * @param {object} opts.sdk - Connected EvoSDK instance
+   * @param {string} opts.mnemonic - BIP39 mnemonic
+   * @param {string} [opts.network='testnet'] - 'testnet' or 'mainnet'
+   * @param {number} [opts.count=1] - Number of addresses to derive
+   */
+  static async create({ sdk, mnemonic, network = 'testnet', count = 1 }) {
+    const addresses = [];
+
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < count; i += 1) {
+      const pathInfo =
+        network === 'testnet'
+          ? await wallet.derivationPathBip44Testnet(0, 0, i)
+          : await wallet.derivationPathBip44Mainnet(0, 0, i);
+      const { path } = pathInfo;
+      const keyInfo = await wallet.deriveKeyFromSeedWithPath({
+        mnemonic,
+        path,
+        network,
+      });
+      const obj = keyInfo.toObject();
+      const privateKey = PrivateKey.fromWIF(obj.privateKeyWif);
+      const signer = new PlatformAddressSigner();
+      const platformAddress = signer.addKey(privateKey);
+
+      addresses.push({
+        address: platformAddress,
+        bech32m: platformAddress.toBech32m(network),
+        privateKeyWif: obj.privateKeyWif,
+        path,
+      });
+    }
+    /* eslint-enable no-await-in-loop */
+
+    return new AddressKeyManager(sdk, addresses, network);
+  }
+
+  /**
+   * Create a PlatformAddressSigner with the primary key loaded.
+   * @returns {PlatformAddressSigner}
+   */
+  getSigner() {
+    const signer = new PlatformAddressSigner();
+    const privateKey = PrivateKey.fromWIF(this.primaryAddress.privateKeyWif);
+    signer.addKey(privateKey);
+    return signer;
+  }
+
+  /**
+   * Create a PlatformAddressSigner with all derived keys loaded.
+   * @returns {PlatformAddressSigner}
+   */
+  getFullSigner() {
+    const signer = new PlatformAddressSigner();
+    this.addresses.forEach((addr) => {
+      const privateKey = PrivateKey.fromWIF(addr.privateKeyWif);
+      signer.addKey(privateKey);
+    });
+    return signer;
+  }
+
+  /**
+   * Fetch current balance and nonce for the primary address.
+   * @returns {Promise<PlatformAddressInfo|undefined>}
+   */
+  async getInfo() {
+    return this.sdk.addresses.get(this.primaryAddress.bech32m);
+  }
+
+  /**
+   * Fetch current balance and nonce for an address by index.
+   * @param {number} index - Address index
+   * @returns {Promise<PlatformAddressInfo|undefined>}
+   */
+  async getInfoAt(index) {
+    const entry = this.addresses[index];
+    if (!entry) {
+      throw new Error(
+        `No derived address at index ${index} (count=${this.addresses.length})`,
+      );
+    }
+    return this.sdk.addresses.get(entry.bech32m);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// setupDashClient — convenience wrapper
+// ---------------------------------------------------------------------------
+
+export async function setupDashClient({
+  requireIdentity = true,
+  identityIndex,
+} = {}) {
+  const { network, mnemonic } = clientConfig;
+  const sdk = await createClient(network);
+
+  let keyManager;
+  let addressKeyManager;
+
+  if (mnemonic) {
+    addressKeyManager = await AddressKeyManager.create({
+      sdk,
+      mnemonic,
+      network,
+    });
+
+    if (requireIdentity) {
+      keyManager = await IdentityKeyManager.create({
+        sdk,
+        mnemonic,
+        network,
+        identityIndex,
+      });
+    } else {
+      keyManager = await IdentityKeyManager.createForNewIdentity({
+        sdk,
+        mnemonic,
+        network,
+        identityIndex,
+      });
+    }
+  }
+
+  return { sdk, keyManager, addressKeyManager };
+}
+
+export { IdentityKeyManager, AddressKeyManager, clientConfig };
